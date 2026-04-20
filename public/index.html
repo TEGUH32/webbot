@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Alecia Dashboard - WhatsApp Bot Premium</title>
+    <title>Alecia Dashboard - Premium WhatsApp Bot</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
@@ -16,95 +16,166 @@
         }
 
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            font-family: 'Poppins', sans-serif;
+            background: #0f0f1a;
+            font-family: 'Inter', sans-serif;
+            color: #ffffff;
             min-height: 100vh;
-            padding-bottom: 50px;
+        }
+
+        /* Glassmorphism Effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         /* Navbar */
         .navbar {
-            background: rgba(0, 0, 0, 0.8) !important;
+            background: rgba(15, 15, 26, 0.95);
             backdrop-filter: blur(10px);
-            border-radius: 20px;
-            margin-bottom: 30px;
-            padding: 15px 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 0;
         }
 
         .navbar-brand {
-            font-weight: 700;
+            font-weight: 800;
             font-size: 1.5rem;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .navbar-brand i {
-            margin-right: 10px;
-            color: #ffd700;
+            background: none;
+            -webkit-text-fill-color: #FFD700;
+            margin-right: 8px;
         }
 
-        /* Stat Cards */
+        /* Stats Cards */
         .stat-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
-            border: none;
             transition: all 0.3s ease;
             cursor: pointer;
             overflow: hidden;
-            position: relative;
         }
 
         .stat-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
-            pointer-events: none;
+            transform: translateY(-5px);
+            border-color: rgba(255, 215, 0, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
         .stat-card .card-body {
-            position: relative;
-            z-index: 1;
             padding: 20px;
         }
 
         .stat-card h6 {
-            font-size: 0.9rem;
-            opacity: 0.9;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.7;
             margin-bottom: 10px;
         }
 
         .stat-card h2 {
-            font-size: 2.2rem;
+            font-size: 2rem;
             font-weight: 700;
             margin-bottom: 0;
+            background: linear-gradient(135deg, #fff, #aaa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .stat-card i {
             position: absolute;
             bottom: 15px;
             right: 20px;
-            font-size: 3rem;
-            opacity: 0.2;
+            font-size: 2.5rem;
+            opacity: 0.1;
         }
 
-        /* Table Container */
+        /* Leaderboard Cards */
+        .leaderboard-card {
+            background: linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.02) 100%);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .leaderboard-card:hover {
+            border-color: rgba(255, 215, 0, 0.5);
+            transform: translateY(-3px);
+        }
+
+        .rank-1 {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+        }
+
+        .rank-2 {
+            background: linear-gradient(135deg, #C0C0C0, #A8A8A8);
+            color: #000;
+        }
+
+        .rank-3 {
+            background: linear-gradient(135deg, #CD7F32, #B87333);
+            color: #000;
+        }
+
+        .rank-badge {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        /* Tabs */
+        .nav-tabs {
+            border-bottom: none;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tabs .nav-link {
+            color: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px 25px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-tabs .nav-link:hover {
+            background: rgba(255, 215, 0, 0.1);
+            border-color: rgba(255, 215, 0, 0.3);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .nav-tabs .nav-link.active {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            border-color: transparent;
+        }
+
+        .nav-tabs .nav-link i {
+            margin-right: 8px;
+        }
+
+        /* Tables */
         .table-container {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.03);
             border-radius: 20px;
             padding: 20px;
-            backdrop-filter: blur(10px);
-            margin-bottom: 20px;
-        }
-
-        .table-container h5 {
-            margin-bottom: 20px;
-            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .table {
@@ -113,17 +184,21 @@
         }
 
         .table thead th {
-            border-bottom-color: rgba(255, 255, 255, 0.2);
+            border-bottom-color: rgba(255, 255, 255, 0.1);
             font-weight: 600;
             padding: 12px;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
         }
 
         .table tbody tr {
             transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .table tbody tr:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 215, 0, 0.05);
             transform: scale(1.01);
         }
 
@@ -132,41 +207,10 @@
             vertical-align: middle;
         }
 
-        /* Tabs */
-        .nav-tabs {
-            border-bottom: none;
-            gap: 10px;
-        }
-
-        .nav-tabs .nav-link {
-            color: white;
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            padding: 12px 25px;
-            border-radius: 15px;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-
-        .nav-tabs .nav-link:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-
-        .nav-tabs .nav-link.active {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .nav-tabs .nav-link i {
-            margin-right: 8px;
-        }
-
         /* Form Controls */
         .form-control, .form-select {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             color: white;
             border-radius: 12px;
             padding: 10px 15px;
@@ -174,15 +218,15 @@
         }
 
         .form-control:focus, .form-select:focus {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
             color: white;
             outline: none;
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+            border-color: rgba(255, 215, 0, 0.5);
         }
 
         .form-control::placeholder {
-            color: rgba(255, 255, 255, 0.6);
+            color: rgba(255, 255, 255, 0.4);
         }
 
         /* Badges */
@@ -197,43 +241,10 @@
             color: #000;
         }
 
-        /* Pagination */
-        .pagination {
-            gap: 5px;
-            margin-top: 20px;
-        }
-
-        .pagination .page-link {
-            background: rgba(0, 0, 0, 0.5);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            padding: 8px 15px;
-            transition: all 0.3s ease;
-        }
-
-        .pagination .page-link:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-
-        .pagination .active .page-link {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-        }
-
-        /* Alert */
-        .alert-custom {
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
-            border: none;
-            border-radius: 15px;
-            color: white;
-        }
-
         /* Buttons */
         .btn-custom {
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             color: white;
             border-radius: 12px;
             padding: 8px 20px;
@@ -241,49 +252,81 @@
         }
 
         .btn-custom:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 215, 0, 0.1);
+            border-color: rgba(255, 215, 0, 0.3);
             transform: translateY(-2px);
+        }
+
+        /* Pagination */
+        .pagination {
+            gap: 5px;
+            margin-top: 20px;
+        }
+
+        .pagination .page-link {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 8px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .pagination .page-link:hover {
+            background: rgba(255, 215, 0, 0.1);
+            border-color: rgba(255, 215, 0, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .pagination .active .page-link {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            border-color: transparent;
         }
 
         /* Status */
         .status-online {
             color: #4caf50;
-            animation: pulse 2s infinite;
         }
 
         .status-offline {
             color: #f44336;
         }
 
-        .status-warning {
-            color: #ff9800;
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        .animate {
+            animation: fadeInUp 0.5s ease forwards;
         }
 
-        /* Footer */
-        footer {
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 20px;
-            margin-top: 30px;
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
         }
 
-        /* Loading Spinner */
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 215, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 215, 0, 0.5);
         }
 
         /* Responsive */
@@ -293,11 +336,11 @@
             }
             
             .stat-card h2 {
-                font-size: 1.5rem;
+                font-size: 1.3rem;
             }
             
             .table {
-                font-size: 12px;
+                font-size: 11px;
             }
             
             .table td, .table th {
@@ -305,62 +348,50 @@
             }
             
             .nav-tabs .nav-link {
-                padding: 8px 15px;
-                font-size: 12px;
-            }
-            
-            .navbar-brand {
-                font-size: 1.2rem;
+                padding: 6px 12px;
+                font-size: 11px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container-fluid py-3 py-md-4">
-        <!-- Navbar -->
-        <nav class="navbar">
-            <div class="container-fluid">
-                <span class="navbar-brand">
-                    <i class="bi bi-robot"></i>
-                    Alecia Dashboard
-                    <small class="ms-2" style="font-size: 0.7rem; opacity: 0.7;">Premium Bot</small>
-                </span>
-                <div class="d-flex align-items-center gap-3">
-                    <div class="d-none d-md-block">
-                        <i class="bi bi-clock"></i>
-                        <span id="liveTime" class="ms-1"></span>
-                    </div>
-                    <div class="dropdown">
-                        <button class="btn btn-custom dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-person-circle"></i> Owner
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-dark">
-                            <li><a class="dropdown-item" href="#" onclick="refreshData()"><i class="bi bi-arrow-repeat"></i> Refresh</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="testConnection()"><i class="bi bi-wifi"></i> Test Connection</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#" onclick="location.reload()"><i class="bi bi-bootstrap-reboot"></i> Reload Page</a></li>
-                        </ul>
-                    </div>
-                </div>
+    <!-- Navbar -->
+    <nav class="navbar sticky-top">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-robot fs-2 me-2" style="color: #FFD700;"></i>
+                <span class="navbar-brand">ALECIA</span>
+                <span class="ms-2 px-2 py-1 rounded" style="background: rgba(255,215,0,0.1); font-size: 0.7rem;">PREMIUM</span>
             </div>
-        </nav>
+            <div class="d-flex align-items-center gap-3">
+                <div class="d-none d-md-block">
+                    <i class="bi bi-clock"></i>
+                    <span id="liveTime" class="ms-1"></span>
+                </div>
+                <button class="btn btn-custom btn-sm" onclick="refreshData()">
+                    <i class="bi bi-arrow-repeat"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
 
-        <!-- Status Alert -->
+    <div class="container-fluid py-4">
+        <!-- Status Bar -->
         <div class="row mb-4">
             <div class="col-12">
-                <div class="alert alert-custom d-flex justify-content-between align-items-center flex-wrap">
+                <div class="glass rounded-3 p-3 d-flex justify-content-between align-items-center flex-wrap">
                     <div>
-                        <i class="bi bi-plug"></i>
+                        <i class="bi bi-plug me-2"></i>
                         <strong>Bot Status:</strong>
-                        <span id="botStatus" class="status-warning">Loading...</span>
+                        <span id="botStatus" class="ms-1">Checking...</span>
                     </div>
                     <div class="mt-2 mt-sm-0">
                         <small class="me-3">
                             <i class="bi bi-clock-history"></i>
                             Last Update: <span id="lastUpdate">-</span>
                         </small>
-                        <button class="btn btn-custom btn-sm" onclick="refreshData()">
-                            <i class="bi bi-arrow-repeat"></i> Refresh
+                        <button class="btn btn-custom btn-sm" onclick="testConnection()">
+                            <i class="bi bi-wifi"></i> Test
                         </button>
                     </div>
                 </div>
@@ -370,36 +401,36 @@
         <!-- Stats Cards -->
         <div class="row g-3 mb-4">
             <div class="col-6 col-md-3">
-                <div class="card stat-card bg-primary text-white">
+                <div class="stat-card position-relative">
                     <div class="card-body">
-                        <h6><i class="bi bi-people-fill me-1"></i> Total Users</h6>
+                        <h6><i class="bi bi-people-fill me-1"></i> TOTAL USERS</h6>
                         <h2 id="totalUsers">0</h2>
                         <i class="bi bi-people-fill"></i>
                     </div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
-                <div class="card stat-card bg-success text-white">
+                <div class="stat-card position-relative">
                     <div class="card-body">
-                        <h6><i class="bi bi-gem me-1"></i> Premium Users</h6>
+                        <h6><i class="bi bi-gem me-1"></i> PREMIUM USERS</h6>
                         <h2 id="premiumUsers">0</h2>
                         <i class="bi bi-gem"></i>
                     </div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
-                <div class="card stat-card bg-info text-white">
+                <div class="stat-card position-relative">
                     <div class="card-body">
-                        <h6><i class="bi bi-chat-dots-fill me-1"></i> Total Groups</h6>
+                        <h6><i class="bi bi-chat-dots-fill me-1"></i> TOTAL GROUPS</h6>
                         <h2 id="totalGroups">0</h2>
                         <i class="bi bi-chat-dots-fill"></i>
                     </div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
-                <div class="card stat-card bg-warning text-white">
+                <div class="stat-card position-relative">
                     <div class="card-body">
-                        <h6><i class="bi bi-terminal-fill me-1"></i> Commands</h6>
+                        <h6><i class="bi bi-terminal-fill me-1"></i> COMMANDS</h6>
                         <h2 id="totalCommands">0</h2>
                         <i class="bi bi-terminal-fill"></i>
                     </div>
@@ -407,33 +438,134 @@
             </div>
         </div>
 
-        <!-- Tabs -->
-        <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab">
-                    <i class="bi bi-people"></i> Users
+        <!-- Second Row Stats -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-4">
+                <div class="stat-card position-relative">
+                    <div class="card-body">
+                        <h6><i class="bi bi-person-check-fill me-1"></i> ACTIVE (24H)</h6>
+                        <h2 id="activeUsers">0</h2>
+                        <i class="bi bi-person-check-fill"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4">
+                <div class="stat-card position-relative">
+                    <div class="card-body">
+                        <h6><i class="bi bi-hourglass-split me-1"></i> UPTIME</h6>
+                        <h2 id="uptime">0</h2>
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4">
+                <div class="stat-card position-relative">
+                    <div class="card-body">
+                        <h6><i class="bi bi-cpu me-1"></i> SYSTEM</h6>
+                        <h2 id="systemStatus">Online</h2>
+                        <i class="bi bi-cpu"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <ul class="nav nav-tabs mb-4" id="mainTab" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#leaderboard">
+                    <i class="bi bi-trophy-fill"></i> Leaderboard
                 </button>
             </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="groups-tab" data-bs-toggle="tab" data-bs-target="#groups" type="button" role="tab">
-                    <i class="bi bi-chat-dots"></i> Groups
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#users">
+                    <i class="bi bi-people-fill"></i> Users
                 </button>
             </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="commands-tab" data-bs-toggle="tab" data-bs-target="#commands" type="button" role="tab">
-                    <i class="bi bi-terminal"></i> Commands
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#groups">
+                    <i class="bi bi-chat-dots-fill"></i> Groups
                 </button>
             </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="system-tab" data-bs-toggle="tab" data-bs-target="#system" type="button" role="tab">
-                    <i class="bi bi-info-circle"></i> System
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#commands">
+                    <i class="bi bi-terminal-fill"></i> Commands
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#system">
+                    <i class="bi bi-info-circle-fill"></i> System
                 </button>
             </li>
         </ul>
 
+        <!-- Tab Content -->
         <div class="tab-content">
-            <!-- Users Tab -->
-            <div class="tab-pane fade show active" id="users" role="tabpanel">
+            <!-- LEADERBOARD TAB -->
+            <div class="tab-pane fade show active" id="leaderboard">
+                <div class="row">
+                    <!-- Top 3 Cards -->
+                    <div class="col-12 mb-4">
+                        <div class="text-center mb-4">
+                            <h3 class="mb-2">🏆 GLOBAL LEADERBOARD 🏆</h3>
+                            <p class="text-white-50">Top performers across all categories</p>
+                        </div>
+                        <div class="row g-3" id="topThreeContainer">
+                            <div class="col-md-4">
+                                <div class="leaderboard-card text-center p-4 h-100">
+                                    <div class="rank-badge rank-2 mx-auto mb-3">🥈</div>
+                                    <h5 id="secondName">Loading...</h5>
+                                    <small class="text-white-50" id="secondValue">-</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="leaderboard-card text-center p-4 h-100" style="border-color: #FFD700;">
+                                    <div class="rank-badge rank-1 mx-auto mb-3">🥇</div>
+                                    <h5 id="firstName">Loading...</h5>
+                                    <small class="text-white-50" id="firstValue">-</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="leaderboard-card text-center p-4 h-100">
+                                    <div class="rank-badge rank-3 mx-auto mb-3">🥉</div>
+                                    <h5 id="thirdName">Loading...</h5>
+                                    <small class="text-white-50" id="thirdValue">-</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Leaderboard Categories -->
+                    <div class="col-12">
+                        <div class="d-flex gap-2 mb-3 flex-wrap">
+                            <button class="btn btn-custom btn-sm" onclick="loadLeaderboard('exp')">🏆 EXP</button>
+                            <button class="btn btn-custom btn-sm" onclick="loadLeaderboard('money')">💰 MONEY</button>
+                            <button class="btn btn-custom btn-sm" onclick="loadLeaderboard('level')">⭐ LEVEL</button>
+                            <button class="btn btn-custom btn-sm" onclick="loadLeaderboard('limit')">🎫 LIMIT</button>
+                        </div>
+                        <div class="table-container">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>User</th>
+                                            <th>Number</th>
+                                            <th>Value</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="leaderboardList">
+                                        <tr><td colspan="5" class="text-center">Select a category...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- USERS TAB -->
+            <div class="tab-pane fade" id="users">
                 <div class="table-container">
                     <div class="row g-3 mb-3">
                         <div class="col-md-4">
@@ -447,28 +579,25 @@
                             <input type="text" class="form-control" id="searchUser" placeholder="🔍 Search by name or number...">
                         </div>
                         <div class="col-md-3 text-end">
-                            <span class="badge bg-info" id="userCount" style="font-size: 0.9rem;">
+                            <span class="badge" style="background: rgba(255,215,0,0.2);" id="userCount">
                                 <i class="bi bi-database"></i> Total: 0 users
                             </span>
                         </div>
                     </div>
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table">
                             <thead>
                                 <tr>
-                                    <th><i class="bi bi-person"></i> Name</th>
-                                    <th><i class="bi bi-phone"></i> Number</th>
-                                    <th><i class="bi bi-gem"></i> Premium</th>
-                                    <th><i class="bi bi-graph-up"></i> Level</th>
-                                    <th><i class="bi bi-cash"></i> Money</th>
-                                    <th><i class="bi bi-ticket"></i> Limit</th>
+                                    <th>Name</th>
+                                    <th>Number</th>
+                                    <th>Premium</th>
+                                    <th>Level</th>
+                                    <th>Money</th>
+                                    <th>Limit</th>
                                 </tr>
                             </thead>
                             <tbody id="usersList">
-                                <tr><td colspan="6" class="text-center">
-                                    <div class="spinner"></div>
-                                    Loading users...
-                                </td></tr>
+                                <tr><td colspan="6" class="text-center">Loading...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -478,32 +607,24 @@
                 </div>
             </div>
 
-            <!-- Groups Tab -->
-            <div class="tab-pane fade" id="groups" role="tabpanel">
+            <!-- GROUPS TAB -->
+            <div class="tab-pane fade" id="groups">
                 <div class="table-container">
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table">
                             <thead>
-                                <tr>
-                                    <th><i class="bi bi-chat-dots"></i> Group Name</th>
-                                    <th><i class="bi bi-hash"></i> ID</th>
-                                    <th><i class="bi bi-people"></i> Members</th>
-                                    <th><i class="bi bi-shield"></i> Status</th>
-                                </tr>
+                                <tr><th>Group Name</th><th>ID</th><th>Members</th><th>Status</th></tr>
                             </thead>
                             <tbody id="groupsList">
-                                <tr><td colspan="4" class="text-center">
-                                    <div class="spinner"></div>
-                                    Loading groups...
-                                </td></tr>
+                                <tr><td colspan="4" class="text-center">Loading...</td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Commands Tab -->
-            <div class="tab-pane fade" id="commands" role="tabpanel">
+            <!-- COMMANDS TAB -->
+            <div class="tab-pane fade" id="commands">
                 <div class="table-container">
                     <div class="row g-3 mb-3">
                         <div class="col-md-4">
@@ -514,80 +635,52 @@
                                 <option value="premium">💎 Premium</option>
                                 <option value="group">👥 Group</option>
                                 <option value="rpg">🎮 RPG</option>
-                                <option value="fun">🎉 Fun</option>
-                                <option value="tools">🛠️ Tools</option>
                             </select>
                         </div>
                         <div class="col-md-8 text-end">
-                            <span class="badge bg-info" id="commandCount" style="font-size: 0.9rem;">
+                            <span class="badge" style="background: rgba(255,215,0,0.2);" id="commandCount">
                                 <i class="bi bi-terminal"></i> Total: 0 commands
                             </span>
                         </div>
                     </div>
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table">
                             <thead>
-                                <tr>
-                                    <th><i class="bi bi-terminal"></i> Command</th>
-                                    <th><i class="bi bi-tag"></i> Category</th>
-                                    <th><i class="bi bi-shield-lock"></i> Requirement</th>
-                                    <th><i class="bi bi-info-circle"></i> Description</th>
-                                </tr>
+                                <tr><th>Command</th><th>Category</th><th>Requirement</th><th>Description</th></tr>
                             </thead>
                             <tbody id="commandsList">
-                                <tr><td colspan="4" class="text-center">
-                                    <div class="spinner"></div>
-                                    Loading commands...
-                                 </td></tr>
+                                <tr><td colspan="4" class="text-center">Loading...</td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- System Tab -->
-            <div class="tab-pane fade" id="system" role="tabpanel">
-                <div class="table-container">
-                    <h5 class="mb-3"><i class="bi bi-server"></i> System Information</h5>
-                    <div class="row">
-                        <div class="col-md-6">
+            <!-- SYSTEM TAB -->
+            <div class="tab-pane fade" id="system">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="table-container h-100">
+                            <h5 class="mb-3"><i class="bi bi-server"></i> Bot Information</h5>
                             <table class="table table-borderless">
-                                <tr>
-                                    <td><i class="bi bi-node-plus"></i> Node Version:</td>
-                                    <td><strong id="nodeVersion">-</strong></td>
-                                </tr>
-                                <tr>
-                                    <td><i class="bi bi-window"></i> Platform:</td>
-                                    <td><strong id="platform">-</strong></td>
-                                </tr>
-                                <tr>
-                                    <td><i class="bi bi-cpu"></i> CPU Cores:</td>
-                                    <td><strong id="cpuCores">-</strong></td>
-                                </tr>
-                                <tr>
-                                    <td><i class="bi bi-hourglass-split"></i> Uptime:</td>
-                                    <td><strong id="uptime">-</strong></td>
-                                </tr>
+                                <tr><td><i class="bi bi-robot"></i> Bot Name:</td><td><strong>Alecia Bot</strong></td></tr>
+                                <tr><td><i class="bi bi-gem"></i> Version:</td><td><strong>2.0.0 Premium</strong></td></tr>
+                                <tr><td><i class="bi bi-node-plus"></i> Node.js:</td><td><strong id="nodeVersion">-</strong></td></tr>
+                                <tr><td><i class="bi bi-window"></i> Platform:</td><td><strong id="platform">-</strong></td></tr>
+                                <tr><td><i class="bi bi-cpu"></i> CPU Cores:</td><td><strong id="cpuCores">-</strong></td></tr>
+                                <tr><td><i class="bi bi-hourglass-split"></i> Uptime:</td><td><strong id="systemUptime">-</strong></td></tr>
                             </table>
                         </div>
-                        <div class="col-md-6">
+                    </div>
+                    <div class="col-md-6">
+                        <div class="table-container h-100">
+                            <h5 class="mb-3"><i class="bi bi-memory"></i> Memory Usage</h5>
                             <table class="table table-borderless">
-                                <tr>
-                                    <td><i class="bi bi-memory"></i> Memory Usage:</td>
-                                    <td><strong id="memoryUsage">-</strong></td>
-                                </tr>
-                                <tr>
-                                    <td><i class="bi bi-hdd-stack"></i> Heap Total:</td>
-                                    <td><strong id="heapTotal">-</strong></td>
-                                </tr>
-                                <tr>
-                                    <td><i class="bi bi-hdd"></i> Heap Used:</td>
-                                    <td><strong id="heapUsed">-</strong></td>
-                                </tr>
-                                <tr>
-                                    <td><i class="bi bi-box"></i> External:</td>
-                                    <td><strong id="external">-</strong></td>
-                                </tr>
+                                <tr><td><i class="bi bi-hdd-stack"></i> RSS:</td><td><strong id="memoryRSS">-</strong></td></tr>
+                                <tr><td><i class="bi bi-hdd"></i> Heap Total:</td><td><strong id="heapTotal">-</strong></td></tr>
+                                <tr><td><i class="bi bi-hdd"></i> Heap Used:</td><td><strong id="heapUsed">-</strong></td></tr>
+                                <tr><td><i class="bi bi-box"></i> External:</td><td><strong id="external">-</strong></td></tr>
+                                <tr><td><i class="bi bi-activity"></i> Status:</td><td><strong id="memoryStatus">-</strong></td></tr>
                             </table>
                         </div>
                     </div>
@@ -596,11 +689,11 @@
         </div>
 
         <!-- Footer -->
-        <footer class="text-center text-white-50">
+        <footer class="text-center text-white-50 mt-4 pt-3 border-top border-white-10">
             <small>
-                <i class="bi bi-robot"></i> Alecia WhatsApp Bot Dashboard |
-                <i class="bi bi-arrow-repeat"></i> Auto refresh every 30 seconds |
-                <i class="bi bi-clock"></i> <span id="refreshTime"></span>
+                <i class="bi bi-robot"></i> Alecia Premium Bot Dashboard |
+                <i class="bi bi-arrow-repeat"></i> Auto refresh every 30s |
+                <i class="bi bi-shield-check"></i> Secure Connection
             </small>
         </footer>
     </div>
