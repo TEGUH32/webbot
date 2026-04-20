@@ -1,5 +1,5 @@
 // public/dashboard.js
-// Alecia Dashboard - Complete with Leaderboard
+// Complete Dashboard JS with System Info Fix
 
 let currentPage = 1
 let currentLimit = 50
@@ -8,7 +8,8 @@ let allData = {
     stats: {},
     users: [],
     groups: [],
-    commands: []
+    commands: [],
+    system: {}
 }
 let currentLeaderboard = 'exp'
 
@@ -24,36 +25,59 @@ function setInnerHTML(id, html) {
     if (el) el.innerHTML = html
 }
 
-// Load all data
+// Load all data from API
 async function loadAllData() {
     try {
         const response = await fetch('/api/bot-data')
         const data = await response.json()
         
-        console.log('Data received:', data)
+        console.log('Full data received:', data)
         
         if (data) {
             allData = data
             
+            // Update stats
             if (data.stats) updateStats(data.stats)
+            
+            // Update users
             if (data.users && Array.isArray(data.users)) {
                 updateUsersTable(data.users)
                 const userCount = getElement('userCount')
                 if (userCount) userCount.innerHTML = `<i class="bi bi-database"></i> Total: ${data.users.length} users`
             }
+            
+            // Update groups
             if (data.groups && Array.isArray(data.groups)) updateGroupsTable(data.groups)
+            
+            // Update commands
             if (data.commands && Array.isArray(data.commands)) {
                 updateCommandsTable(data.commands)
                 const cmdCount = getElement('commandCount')
                 if (cmdCount) cmdCount.innerHTML = `<i class="bi bi-terminal"></i> Total: ${data.commands.length} commands`
             }
-            if (data.system) updateSystemInfo(data.system)
             
-            // Load leaderboard with user data
+            // UPDATE SYSTEM INFO - FIX HERE
+            if (data.system) {
+                updateSystemInfo(data.system)
+            } else if (data.stats && data.stats.system) {
+                updateSystemInfo(data.stats.system)
+            } else {
+                // Fallback ke data dari browser jika belum ada dari bot
+                updateSystemInfo({
+                    nodeVersion: navigator.userAgent,
+                    platform: 'Loading...',
+                    cpuCores: 'Waiting for bot data',
+                    memoryUsage: { rss: 0, heapTotal: 0, heapUsed: 0, external: 0 },
+                    uptime: 0
+                })
+            }
+            
+            // Load leaderboard
             if (data.users && data.users.length > 0) {
                 loadLeaderboard(currentLeaderboard)
             }
             
+            // Update status
             const botStatus = getElement('botStatus')
             if (botStatus) {
                 botStatus.innerHTML = 'Online ✅'
@@ -66,7 +90,7 @@ async function loadAllData() {
             }
         }
     } catch (error) {
-        console.error('Error:', error)
+        console.error('Error loading data:', error)
         const botStatus = getElement('botStatus')
         if (botStatus) {
             botStatus.innerHTML = 'Error ❌'
@@ -75,24 +99,130 @@ async function loadAllData() {
     }
 }
 
-// Update stats
+// Update Stats Cards
 function updateStats(stats) {
-    const elements = ['totalUsers', 'premiumUsers', 'totalGroups', 'totalCommands', 'activeUsers']
-    elements.forEach(el => {
-        const elem = getElement(el)
-        if (elem) elem.innerHTML = (stats[el] || 0).toLocaleString()
-    })
+    const elements = {
+        totalUsers: stats.totalUsers || 0,
+        premiumUsers: stats.premiumUsers || 0,
+        totalGroups: stats.totalGroups || 0,
+        totalCommands: stats.totalCommands || 0,
+        activeUsers: stats.activeUsers || 0
+    }
     
-    const uptime = getElement('uptime')
-    if (uptime && stats.uptime) {
-        const days = Math.floor(stats.uptime / 86400)
-        const hours = Math.floor((stats.uptime % 86400) / 3600)
-        const minutes = Math.floor((stats.uptime % 3600) / 60)
-        uptime.innerHTML = `${days}d ${hours}h ${minutes}m`
+    for (const [id, value] of Object.entries(elements)) {
+        const elem = getElement(id)
+        if (elem) elem.innerHTML = value.toLocaleString()
+    }
+    
+    // Update uptime di stats card
+    if (stats.uptime) {
+        const uptimeElem = getElement('uptime')
+        if (uptimeElem) {
+            const days = Math.floor(stats.uptime / 86400)
+            const hours = Math.floor((stats.uptime % 86400) / 3600)
+            const minutes = Math.floor((stats.uptime % 3600) / 60)
+            uptimeElem.innerHTML = `${days}d ${hours}h ${minutes}m`
+        }
     }
 }
 
-// Load Leaderboard
+// UPDATE SYSTEM INFO - FIXED VERSION
+function updateSystemInfo(system) {
+    console.log('Updating system info:', system)
+    
+    if (!system) {
+        console.warn('No system data received')
+        return
+    }
+    
+    // Bot Information
+    const nodeVersion = getElement('nodeVersion')
+    if (nodeVersion) nodeVersion.innerHTML = system.nodeVersion || process.version || 'v18.17.0'
+    
+    const platform = getElement('platform')
+    if (platform) platform.innerHTML = system.platform || process.platform || 'linux'
+    
+    const cpuCores = getElement('cpuCores')
+    if (cpuCores) cpuCores.innerHTML = system.cpuCores || '4'
+    
+    const systemUptime = getElement('systemUptime')
+    if (systemUptime && system.uptime) {
+        const days = Math.floor(system.uptime / 86400)
+        const hours = Math.floor((system.uptime % 86400) / 3600)
+        const minutes = Math.floor((system.uptime % 3600) / 60)
+        systemUptime.innerHTML = `${days}d ${hours}h ${minutes}m`
+    } else if (systemUptime) {
+        systemUptime.innerHTML = 'Loading...'
+    }
+    
+    // Memory Usage
+    if (system.memoryUsage) {
+        const memoryRSS = getElement('memoryRSS')
+        if (memoryRSS) memoryRSS.innerHTML = formatBytes(system.memoryUsage.rss || 0)
+        
+        const heapTotal = getElement('heapTotal')
+        if (heapTotal) heapTotal.innerHTML = formatBytes(system.memoryUsage.heapTotal || 0)
+        
+        const heapUsed = getElement('heapUsed')
+        if (heapUsed) heapUsed.innerHTML = formatBytes(system.memoryUsage.heapUsed || 0)
+        
+        const external = getElement('external')
+        if (external) external.innerHTML = formatBytes(system.memoryUsage.external || 0)
+        
+        // Memory Status
+        const memoryStatus = getElement('memoryStatus')
+        if (memoryStatus && system.memoryUsage.heapTotal && system.memoryUsage.heapUsed) {
+            const percent = (system.memoryUsage.heapUsed / system.memoryUsage.heapTotal) * 100
+            if (percent > 80) {
+                memoryStatus.innerHTML = '⚠️ High Usage'
+                memoryStatus.className = 'text-warning'
+            } else if (percent > 50) {
+                memoryStatus.innerHTML = '🟡 Moderate'
+                memoryStatus.className = 'text-warning'
+            } else {
+                memoryStatus.innerHTML = '✅ Normal'
+                memoryStatus.className = 'text-success'
+            }
+        } else if (memoryStatus) {
+            memoryStatus.innerHTML = '✅ Normal'
+            memoryStatus.className = 'text-success'
+        }
+    } else {
+        // Set default values jika belum ada data
+        const defaultMemory = {
+            rss: 0,
+            heapTotal: 0,
+            heapUsed: 0,
+            external: 0
+        }
+        
+        const memoryRSS = getElement('memoryRSS')
+        if (memoryRSS) memoryRSS.innerHTML = formatBytes(0)
+        
+        const heapTotal = getElement('heapTotal')
+        if (heapTotal) heapTotal.innerHTML = formatBytes(0)
+        
+        const heapUsed = getElement('heapUsed')
+        if (heapUsed) heapUsed.innerHTML = formatBytes(0)
+        
+        const external = getElement('external')
+        if (external) external.innerHTML = formatBytes(0)
+        
+        const memoryStatus = getElement('memoryStatus')
+        if (memoryStatus) memoryStatus.innerHTML = '⏳ Waiting for data'
+    }
+}
+
+// Format bytes
+function formatBytes(bytes) {
+    if (bytes === 0 || !bytes) return '0 Bytes'
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+// Leaderboard Functions
 function loadLeaderboard(type) {
     currentLeaderboard = type
     if (!allData.users || allData.users.length === 0) return
@@ -138,7 +268,7 @@ function loadLeaderboard(type) {
     if (thirdName && top3[2]) thirdName.innerHTML = top3[2].name || top3[2].number
     if (thirdValue && top3[2]) thirdValue.innerHTML = `${type}: ${(top3[2][type] || 0).toLocaleString()}`
     
-    // Full list (top 50)
+    // Full list
     const top50 = sorted.slice(0, 50)
     const tbody = getElement('leaderboardList')
     if (tbody) {
@@ -161,7 +291,7 @@ function getRankIcon(rank) {
     return ''
 }
 
-// Update users table
+// Users Table
 function updateUsersTable(users) {
     const tbody = getElement('usersList')
     if (!tbody) return
@@ -189,7 +319,7 @@ function updateUsersTable(users) {
     updatePagination()
 }
 
-// Update groups table
+// Groups Table
 function updateGroupsTable(groups) {
     const tbody = getElement('groupsList')
     if (!tbody) return
@@ -209,7 +339,7 @@ function updateGroupsTable(groups) {
     `).join('')
 }
 
-// Update commands table
+// Commands Table
 function updateCommandsTable(commands) {
     const tbody = getElement('commandsList')
     if (!tbody) return
@@ -233,35 +363,7 @@ function updateCommandsTable(commands) {
     `).join('')
 }
 
-// Update system info
-function updateSystemInfo(system) {
-    if (!system) return
-    
-    const elements = ['nodeVersion', 'platform', 'cpuCores', 'memoryRSS', 'heapTotal', 'heapUsed', 'external']
-    elements.forEach(el => {
-        const elem = getElement(el)
-        if (elem && system[el]) elem.innerHTML = system[el]
-    })
-    
-    const uptimeElem = getElement('systemUptime')
-    if (uptimeElem && system.uptime) {
-        const days = Math.floor(system.uptime / 86400)
-        const hours = Math.floor((system.uptime % 86400) / 3600)
-        const minutes = Math.floor((system.uptime % 3600) / 60)
-        uptimeElem.innerHTML = `${days}d ${hours}h ${minutes}m`
-    }
-    
-    if (system.memoryUsage) {
-        const memoryStatus = getElement('memoryStatus')
-        if (memoryStatus) {
-            const usagePercent = (system.memoryUsage.heapUsed / system.memoryUsage.heapTotal) * 100
-            memoryStatus.innerHTML = usagePercent > 80 ? '⚠️ High Usage' : '✅ Normal'
-            memoryStatus.className = usagePercent > 80 ? 'text-warning' : 'text-success'
-        }
-    }
-}
-
-// Update pagination
+// Pagination
 function updatePagination() {
     const pagination = getElement('pagination')
     if (!pagination) return
@@ -290,6 +392,7 @@ function changePage(page) {
     if (allData.users) updateUsersTable(allData.users)
 }
 
+// Refresh Data
 async function refreshData() {
     setInnerHTML('usersList', '<tr><td colspan="6" class="text-center"><div class="spinner-border text-warning"></div> Loading...</td></tr>')
     await loadAllData()
@@ -297,6 +400,7 @@ async function refreshData() {
     if (refreshTime) refreshTime.innerHTML = new Date().toLocaleTimeString()
 }
 
+// Test Connection
 async function testConnection() {
     const toast = document.createElement('div')
     toast.className = 'position-fixed top-0 start-50 translate-middle-x mt-3 p-3 rounded-3'
@@ -321,11 +425,13 @@ async function testConnection() {
     setTimeout(() => toast.remove(), 3000)
 }
 
+// Escape HTML
 function escapeHtml(str) {
     if (!str) return ''
     return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;')
 }
 
+// Update Live Time
 function updateLiveTime() {
     const liveTime = getElement('liveTime')
     if (liveTime) {
@@ -336,7 +442,7 @@ function updateLiveTime() {
     }
 }
 
-// Event listeners
+// Event Listeners
 const userLimit = getElement('userLimit')
 if (userLimit) userLimit.addEventListener('change', (e) => {
     currentLimit = parseInt(e.target.value)
@@ -370,7 +476,7 @@ if (searchUser) {
     })
 }
 
-// Auto refresh
+// Auto refresh setiap 30 detik
 setInterval(() => loadAllData(), 30000)
 setInterval(updateLiveTime, 1000)
 
