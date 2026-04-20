@@ -1,0 +1,158 @@
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+}
+
+.stat-card {
+    border-radius: 15px;
+    border: none;
+    transition: transform 0.3s, box-shadow 0.3s;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.stat-card .card-body {
+    position: relative;
+    z-index: 1;
+}
+
+.table-container {
+    background: rgba(255,255,255,0.1);
+    border-radius: 15px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    margin-bottom: 20px;
+}
+
+.config-card {
+    background: rgba(0,0,0,0.5);
+    border-radius: 15px;
+    border: none;
+    color: white;
+}
+
+.config-card .card-header {
+    background: rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+.table {
+    color: white;
+    margin-bottom: 0;
+}
+
+.table thead th {
+    border-bottom-color: rgba(255,255,255,0.2);
+    font-weight: 600;
+}
+
+.table tbody tr:hover {
+    background: rgba(255,255,255,0.1);
+    cursor: pointer;
+}
+
+.nav-tabs .nav-link {
+    color: white;
+    background: transparent;
+    border: none;
+    padding: 10px 20px;
+    margin-right: 5px;
+    border-radius: 10px;
+    transition: all 0.3s;
+}
+
+.nav-tabs .nav-link:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.nav-tabs .nav-link.active {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: none;
+    transform: translateY(-2px);
+}
+
+.badge-premium {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #000;
+}
+
+.pagination .page-link {
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border: none;
+    margin: 0 5px;
+    border-radius: 10px;
+    transition: all 0.3s;
+}
+
+.pagination .page-link:hover {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.pagination .active .page-link {
+    background: rgba(255,255,255,0.3);
+}
+
+.form-control, .form-select {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    border-radius: 10px;
+}
+
+.form-control:focus, .form-select:focus {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    outline: none;
+    box-shadow: 0 0 10px rgba(255,255,255,0.2);
+}
+
+.form-control::placeholder {
+    color: rgba(255,255,255,0.6);
+}
+
+.status-online {
+    color: #4caf50;
+    animation: pulse 2s infinite;
+}
+
+.status-offline {
+    color: #f44336;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.btn-outline-light:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+@media (max-width: 768px) {
+    .container-fluid {
+        padding: 10px;
+    }
+    
+    .stat-card h2 {
+        font-size: 1.5rem;
+    }
+    
+    .table {
+        font-size: 12px;
+    }
+    
+    .nav-tabs .nav-link {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+}
