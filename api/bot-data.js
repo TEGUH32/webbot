@@ -1,22 +1,31 @@
 // api/bot-data.js
-// Complete Bot Data Management - Alecia Dashboard
+// Complete Bot Data Management - Alecia Dashboard Full Version
 
 let cachedData = {
     stats: {
         totalUsers: 0,
         premiumUsers: 0,
+        registeredUsers: 0,
         totalGroups: 0,
         activeUsers: 0,
         totalCommands: 0,
         totalMoney: 0,
         totalExp: 0,
         uptime: 0,
-        lastUpdate: null
+        lastUpdate: null,
+        registrations: {
+            today: 0,
+            thisWeek: 0,
+            thisMonth: 0,
+            total: 0
+        }
     },
     users: [],
     groups: [],
     commands: [],
     system: {
+        botName: 'Alecia Bot',
+        version: '2.0.0 Premium',
         nodeVersion: process.version,
         platform: process.platform,
         arch: process.arch,
@@ -37,19 +46,24 @@ let cachedData = {
         limit: []
     },
     registrations: {
-        today: 0,
-        thisWeek: 0,
-        thisMonth: 0,
-        total: 0,
+        stats: {
+            today: 0,
+            thisWeek: 0,
+            thisMonth: 0,
+            total: 0
+        },
         recent: []
     },
     activity: {
-        today: [],
+        today: 0,
         recent: []
-    }
+    },
+    pendingRegistrations: []  // Untuk registrasi dari website
 }
 
-// Helper functions
+// ========== HELPER FUNCTIONS ==========
+
+// Update all leaderboards
 function updateLeaderboard(users) {
     if (!users || !Array.isArray(users)) return
     
@@ -62,7 +76,8 @@ function updateLeaderboard(users) {
             name: u.name,
             number: u.number,
             value: u.exp || 0,
-            isPremium: u.isPremium
+            isPremium: u.isPremium,
+            isRegistered: u.isRegistered
         }))
     
     // Money Leaderboard
@@ -74,7 +89,8 @@ function updateLeaderboard(users) {
             name: u.name,
             number: u.number,
             value: u.money || 0,
-            isPremium: u.isPremium
+            isPremium: u.isPremium,
+            isRegistered: u.isRegistered
         }))
     
     // Level Leaderboard
@@ -86,7 +102,8 @@ function updateLeaderboard(users) {
             name: u.name,
             number: u.number,
             value: u.level || 0,
-            isPremium: u.isPremium
+            isPremium: u.isPremium,
+            isRegistered: u.isRegistered
         }))
     
     // Limit Leaderboard
@@ -98,10 +115,12 @@ function updateLeaderboard(users) {
             name: u.name,
             number: u.number,
             value: u.limit || 0,
-            isPremium: u.isPremium
+            isPremium: u.isPremium,
+            isRegistered: u.isRegistered
         }))
 }
 
+// Update registration statistics
 function updateRegistrationStats(users) {
     const now = new Date()
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
@@ -111,52 +130,71 @@ function updateRegistrationStats(users) {
     let todayCount = 0
     let weekCount = 0
     let monthCount = 0
+    let totalRegistered = 0
     let recentRegs = []
     
     for (const user of users) {
-        if (user.registeredAt) {
-            const regTime = new Date(user.registeredAt).getTime()
-            if (regTime >= today) todayCount++
-            if (regTime >= thisWeekStart) weekCount++
-            if (regTime >= thisMonthStart) monthCount++
+        if (user.isRegistered === true) {
+            totalRegistered++
             
-            if (recentRegs.length < 10) {
-                recentRegs.push({
-                    name: user.name,
-                    number: user.number,
-                    time: user.registeredAt,
-                    isPremium: user.isPremium
-                })
+            if (user.registeredAt) {
+                const regTime = new Date(user.registeredAt).getTime()
+                if (regTime >= today) todayCount++
+                if (regTime >= thisWeekStart) weekCount++
+                if (regTime >= thisMonthStart) monthCount++
+                
+                if (recentRegs.length < 20) {
+                    recentRegs.push({
+                        name: user.name,
+                        number: user.number,
+                        time: user.registeredAt,
+                        isPremium: user.isPremium,
+                        level: user.level || 0
+                    })
+                }
             }
         }
     }
     
     cachedData.registrations = {
+        stats: {
+            today: todayCount,
+            thisWeek: weekCount,
+            thisMonth: monthCount,
+            total: totalRegistered
+        },
+        recent: recentRegs.sort((a, b) => new Date(b.time) - new Date(a.time))
+    }
+    
+    // Also update stats.registrations
+    cachedData.stats.registrations = {
         today: todayCount,
         thisWeek: weekCount,
         thisMonth: monthCount,
-        total: users.filter(u => u.registered).length,
-        recent: recentRegs
+        total: totalRegistered
     }
+    cachedData.stats.registeredUsers = totalRegistered
 }
 
+// Update activity statistics
 function updateActivityStats(users) {
     const now = Date.now()
     const today = new Date().toDateString()
     const recentActivity = []
+    let activeToday = 0
     
-    let todayCount = 0
     for (const user of users) {
         if (user.lastSeen) {
             const lastSeenDate = new Date(user.lastSeen).toDateString()
             if (lastSeenDate === today) {
-                todayCount++
-                if (recentActivity.length < 20) {
+                activeToday++
+                if (recentActivity.length < 30) {
                     recentActivity.push({
                         name: user.name,
                         number: user.number,
                         time: user.lastSeen,
-                        action: 'active'
+                        action: 'active',
+                        level: user.level || 0
                     })
                 }
             }
@@ -164,16 +202,29 @@ function updateActivityStats(users) {
     }
     
     cachedData.activity = {
-        today: todayCount,
+        today: activeToday,
         recent: recentActivity.sort((a, b) => new Date(b.time) - new Date(a.time))
+    }
+    cachedData.stats.activeUsers = activeToday
+}
+
+// Update system info
+function updateSystemInfo(systemData) {
+    if (systemData) {
+        cachedData.system = {
+            ...cachedData.system,
+            ...systemData,
+            timestamp: new Date().toISOString()
+        }
     }
 }
 
+// ========== MAIN HANDLER ==========
 export default async function handler(req, res) {
-    // CORS
+    // CORS Headers
     res.setHeader('Access-Control-Allow-Origin', '*')
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-api-key')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-api-key, X-Bot-Secret')
     
     if (req.method === 'OPTIONS') {
         return res.status(200).end()
@@ -181,21 +232,58 @@ export default async function handler(req, res) {
     
     // ========== GET METHODS ==========
     if (req.method === 'GET') {
-        const { type, limit, page, search, leaderboard } = req.query
+        const { type, limit, page, search, leaderboard, number } = req.query
         
-        // Get specific leaderboard
-        if (leaderboard && cachedData.leaderboard[leaderboard]) {
+        // Health check endpoint
+        if (type === 'health') {
             return res.status(200).json({
-                success: true,
-                data: cachedData.leaderboard[leaderboard]
+                status: 'ok',
+                botName: 'Alecia Bot',
+                version: '2.0.0 Premium',
+                lastUpdate: cachedData.stats.lastUpdate,
+                totalUsers: cachedData.stats.totalUsers,
+                timestamp: new Date().toISOString()
             })
         }
         
-        // Get registrations stats
+        // Get pending registrations (for bot)
+        if (type === 'pending-registrations') {
+            const pending = [...cachedData.pendingRegistrations]
+            // Clear after sending
+            cachedData.pendingRegistrations = []
+            return res.status(200).json({
+                success: true,
+                registrations: pending
+            })
+        }
+        
+        // Get specific leaderboard
+        if (leaderboard && cachedData.leaderboard[leaderboard]) {
+            const limitNum = parseInt(limit) || 20
+            return res.status(200).json({
+                success: true,
+                type: leaderboard,
+                data: cachedData.leaderboard[leaderboard].slice(0, limitNum),
+                total: cachedData.leaderboard[leaderboard].length,
+                lastUpdate: cachedData.stats.lastUpdate
+            })
+        }
+        
+        // Get all leaderboards
+        if (type === 'all-leaderboards') {
+            return res.status(200).json({
+                success: true,
+                data: cachedData.leaderboard,
+                lastUpdate: cachedData.stats.lastUpdate
+            })
+        }
+        
+        // Get registration stats
         if (type === 'registrations') {
             return res.status(200).json({
                 success: true,
-                data: cachedData.registrations
+                data: cachedData.registrations,
+                lastUpdate: cachedData.stats.lastUpdate
             })
         }
         
@@ -203,21 +291,33 @@ export default async function handler(req, res) {
         if (type === 'activity') {
             return res.status(200).json({
                 success: true,
-                data: cachedData.activity
+                data: cachedData.activity,
+                lastUpdate: cachedData.stats.lastUpdate
             })
         }
         
         // Search users
-        if (search) {
+        if (search && search.length > 0) {
             const searchLower = search.toLowerCase()
             const filtered = cachedData.users.filter(u => 
-                u.name.toLowerCase().includes(searchLower) || 
-                u.number.includes(search)
+                (u.name || '').toLowerCase().includes(searchLower) || 
+                (u.number || '').includes(search)
             )
             return res.status(200).json({
                 success: true,
-                data: filtered.slice(0, 50),
-                total: filtered.length
+                data: filtered.slice(0, 100),
+                total: filtered.length,
+                search: search
+            })
+        }
+        
+        // Get single user by number
+        if (number) {
+            const user = cachedData.users.find(u => u.number === number)
+            return res.status(200).json({
+                success: true,
+                data: user || null,
+                found: !!user
             })
         }
         
@@ -227,13 +327,15 @@ export default async function handler(req, res) {
             const limitNum = parseInt(limit) || 50
             const start = (pageNum - 1) * limitNum
             const end = start + limitNum
+            const paginatedUsers = cachedData.users.slice(start, end)
             
             return res.status(200).json({
                 success: true,
                 data: {
-                    users: cachedData.users.slice(start, end),
+                    users: paginatedUsers,
                     total: cachedData.users.length,
                     page: pageNum,
+                    limit: limitNum,
                     totalPages: Math.ceil(cachedData.users.length / limitNum)
                 }
             })
@@ -241,11 +343,52 @@ export default async function handler(req, res) {
         
         // Get premium users
         if (type === 'premium') {
-            const premiumUsers = cachedData.users.filter(u => u.isPremium)
+            const premiumUsers = cachedData.users.filter(u => u.isPremium === true)
             return res.status(200).json({
                 success: true,
                 data: premiumUsers,
                 total: premiumUsers.length
+            })
+        }
+        
+        // Get registered users
+        if (type === 'registered') {
+            const registeredUsers = cachedData.users.filter(u => u.isRegistered === true)
+            return res.status(200).json({
+                success: true,
+                data: registeredUsers,
+                total: registeredUsers.length
+            })
+        }
+        
+        // Get groups
+        if (type === 'groups') {
+            return res.status(200).json({
+                success: true,
+                data: cachedData.groups,
+                total: cachedData.groups.length
+            })
+        }
+        
+        // Get commands
+        if (type === 'commands') {
+            return res.status(200).json({
+                success: true,
+                data: cachedData.commands,
+                total: cachedData.commands.length
+            })
+        }
+        
+        // Get system info
+        if (type === 'system') {
+            return res.status(200).json({
+                success: true,
+                data: cachedData.system,
+                botInfo: {
+                    name: 'Alecia Bot',
+                    version: '2.0.0 Premium',
+                    owner: 'Teguh'
+                }
             })
         }
         
@@ -256,45 +399,25 @@ export default async function handler(req, res) {
                 data: {
                     topExp: cachedData.leaderboard.exp.slice(0, 10),
                     topMoney: cachedData.leaderboard.money.slice(0, 10),
-                    topLevel: cachedData.leaderboard.level.slice(0, 10)
+                    topLevel: cachedData.leaderboard.level.slice(0, 10),
+                    topLimit: cachedData.leaderboard.limit.slice(0, 10)
                 }
             })
         }
         
-        // Get single user by number
-        if (type === 'user' && req.query.number) {
-            const user = cachedData.users.find(u => u.number === req.query.number)
-            return res.status(200).json({
-                success: true,
-                data: user || null
-            })
-        }
-        
-        // Get full data
+        // ========== FULL DATA RESPONSE ==========
         return res.status(200).json({
             success: true,
             stats: cachedData.stats,
             users: cachedData.users,
             groups: cachedData.groups,
             commands: cachedData.commands,
-            system: {
-                nodeVersion: cachedData.system?.nodeVersion || process.version,
-                platform: cachedData.system?.platform || process.platform,
-                arch: cachedData.system?.arch || process.arch,
-                cpuCores: cachedData.system?.cpuCores || 1,
-                memoryUsage: cachedData.system?.memoryUsage || {
-                    rss: process.memoryUsage().rss,
-                    heapTotal: process.memoryUsage().heapTotal,
-                    heapUsed: process.memoryUsage().heapUsed,
-                    external: process.memoryUsage().external
-                },
-                uptime: cachedData.system?.uptime || process.uptime(),
-                timestamp: new Date().toISOString()
-            },
+            system: cachedData.system,
             leaderboard: cachedData.leaderboard,
             registrations: cachedData.registrations,
             activity: cachedData.activity,
-            lastUpdate: cachedData.stats?.lastUpdate || new Date().toISOString()
+            lastUpdate: cachedData.stats.lastUpdate,
+            serverTime: new Date().toISOString()
         })
     }
     
@@ -323,6 +446,7 @@ export default async function handler(req, res) {
             // Update groups
             if (data.groups && Array.isArray(data.groups)) {
                 cachedData.groups = data.groups
+                cachedData.stats.totalGroups = data.groups.length
             }
             
             // Update commands
@@ -333,23 +457,34 @@ export default async function handler(req, res) {
             
             // Update system
             if (data.system) {
-                cachedData.system = {
-                    ...cachedData.system,
-                    ...data.system,
-                    timestamp: new Date().toISOString()
-                }
+                updateSystemInfo(data.system)
                 cachedData.stats.uptime = data.system.uptime || cachedData.stats.uptime
             }
             
+            // Handle new registration from website
+            if (data.type === 'register' && data.number && data.name) {
+                const newRegistration = {
+                    number: data.number,
+                    name: data.name,
+                    age: data.age || 0,
+                    registeredAt: new Date().toISOString(),
+                    status: 'pending'
+                }
+                cachedData.pendingRegistrations.push(newRegistration)
+                console.log(`📝 New pending registration: ${data.name} (${data.number})`)
+            }
+            
             console.log(`[BOT-DATA] Updated at ${new Date().toISOString()}`)
-            console.log(`[BOT-DATA] Users: ${cachedData.stats.totalUsers}, Premium: ${cachedData.stats.premiumUsers}`)
-            console.log(`[BOT-DATA] Groups: ${cachedData.stats.totalGroups}, Commands: ${cachedData.stats.totalCommands}`)
+            console.log(`📊 Users: ${cachedData.stats.totalUsers}, Premium: ${cachedData.stats.premiumUsers}`)
+            console.log(`👥 Groups: ${cachedData.stats.totalGroups}, Commands: ${cachedData.stats.totalCommands}`)
+            console.log(`📝 Registered: ${cachedData.stats.registeredUsers}, Pending: ${cachedData.pendingRegistrations.length}`)
             
             return res.status(200).json({ 
                 success: true, 
                 message: 'Data received',
                 timestamp: new Date().toISOString()
             })
+            
         } catch (error) {
             console.error('[BOT-DATA] Error:', error)
             return res.status(500).json({ 
@@ -359,7 +494,7 @@ export default async function handler(req, res) {
         }
     }
     
-    // ========== PUT METHODS (Update single user) ==========
+    // ========== PUT METHODS ==========
     if (req.method === 'PUT') {
         try {
             const { number, updates } = req.body
@@ -375,9 +510,12 @@ export default async function handler(req, res) {
             if (userIndex !== -1) {
                 cachedData.users[userIndex] = { 
                     ...cachedData.users[userIndex], 
-                    ...updates 
+                    ...updates,
+                    lastUpdated: new Date().toISOString()
                 }
                 updateLeaderboard(cachedData.users)
+                updateRegistrationStats(cachedData.users)
+                updateActivityStats(cachedData.users)
                 
                 return res.status(200).json({ 
                     success: true, 
@@ -390,6 +528,7 @@ export default async function handler(req, res) {
                 success: false, 
                 error: 'User not found' 
             })
+            
         } catch (error) {
             return res.status(500).json({ 
                 success: false, 
@@ -414,6 +553,8 @@ export default async function handler(req, res) {
             if (userIndex !== -1) {
                 cachedData.users.splice(userIndex, 1)
                 updateLeaderboard(cachedData.users)
+                updateRegistrationStats(cachedData.users)
+                updateActivityStats(cachedData.users)
                 
                 return res.status(200).json({ 
                     success: true, 
@@ -425,6 +566,7 @@ export default async function handler(req, res) {
                 success: false, 
                 error: 'User not found' 
             })
+            
         } catch (error) {
             return res.status(500).json({ 
                 success: false, 
