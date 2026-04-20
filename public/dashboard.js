@@ -1,6 +1,7 @@
 // public/dashboard.js
-// Complete Dashboard JS with System Info Fix
+// Alecia Dashboard - Complete Version with All Features
 
+// ========== GLOBAL VARIABLES ==========
 let currentPage = 1
 let currentLimit = 50
 let totalPages = 1
@@ -9,11 +10,41 @@ let allData = {
     users: [],
     groups: [],
     commands: [],
-    system: {}
+    system: {},
+    leaderboard: {},
+    registrations: {},
+    activity: {}
 }
 let currentLeaderboard = 'exp'
+let refreshInterval = null
+let notificationSound = null
+let lastUpdateTime = null
 
-// Safe element getter
+// ========== POPULAR COMMANDS LIST ==========
+const popularCommands = [
+    { name: 'menu', description: 'Menampilkan semua fitur bot', category: 'main' },
+    { name: 'profile', description: 'Melihat profil user', category: 'main' },
+    { name: 'daily', description: 'Ambil limit harian', category: 'rpg' },
+    { name: 'claim', description: 'Claim bonus', category: 'rpg' },
+    { name: 'transfer', description: 'Transfer money ke user lain', category: 'economy' },
+    { name: 'shop', description: 'Melihat item shop', category: 'shop' },
+    { name: 'buy', description: 'Membeli item', category: 'shop' },
+    { name: 'inventory', description: 'Melihat inventory', category: 'rpg' },
+    { name: 'level', description: 'Cek level user', category: 'main' },
+    { name: 'leaderboard', description: 'Melihat leaderboard', category: 'main' },
+    { name: 'premium', description: 'Info premium', category: 'premium' },
+    { name: 'register', description: 'Registrasi user', category: 'main' },
+    { name: 'work', description: 'Bekerja untuk mendapatkan money', category: 'economy' },
+    { name: 'mine', description: 'Menambang', category: 'rpg' },
+    { name: 'hunt', description: 'Berburu hewan', category: 'rpg' },
+    { name: 'fish', description: 'Memancing', category: 'rpg' },
+    { name: 'adventure', description: 'Petualangan', category: 'rpg' },
+    { name: 'duel', description: 'Duel dengan user lain', category: 'game' },
+    { name: 'casino', description: 'Main judi', category: 'game' },
+    { name: 'gift', description: 'Kirim gift ke user', category: 'economy' }
+]
+
+// ========== SAFE ELEMENT GETTER ==========
 function getElement(id) {
     const el = document.getElementById(id)
     if (!el) console.warn(`Element ${id} not found`)
@@ -25,7 +56,40 @@ function setInnerHTML(id, html) {
     if (el) el.innerHTML = html
 }
 
-// Load all data from API
+// ========== NOTIFICATION SYSTEM ==========
+function showNotification(message, type = 'info') {
+    const colors = {
+        success: '#4caf50',
+        error: '#f44336',
+        warning: '#ff9800',
+        info: '#2196f3'
+    }
+    
+    const toast = document.createElement('div')
+    toast.className = 'position-fixed bottom-0 end-0 m-3 p-3 rounded-3 animate__animated animate__fadeInUp'
+    toast.style.background = '#1a1a2e'
+    toast.style.borderLeft = `4px solid ${colors[type]}`
+    toast.style.borderRadius = '12px'
+    toast.style.boxShadow = '0 5px 20px rgba(0,0,0,0.3)'
+    toast.style.zIndex = '9999'
+    toast.style.minWidth = '280px'
+    toast.style.maxWidth = '350px'
+    toast.style.backdropFilter = 'blur(10px)'
+    toast.innerHTML = `
+        <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-${type === 'success' ? 'check-circle-fill' : type === 'error' ? 'exclamation-triangle-fill' : type === 'warning' ? 'exclamation-triangle-fill' : 'info-circle-fill'} fs-4" style="color: ${colors[type]}"></i>
+            <div class="flex-grow-1">
+                <small class="text-white-50">${new Date().toLocaleTimeString()}</small>
+                <div class="text-white">${message}</div>
+            </div>
+            <button class="btn-close btn-close-white" onclick="this.parentElement.parentElement.remove()"></button>
+        </div>
+    `
+    document.body.appendChild(toast)
+    setTimeout(() => toast.remove(), 5000)
+}
+
+// ========== LOAD ALL DATA ==========
 async function loadAllData() {
     try {
         const response = await fetch('/api/bot-data')
@@ -54,59 +118,71 @@ async function loadAllData() {
                 updateCommandsTable(data.commands)
                 const cmdCount = getElement('commandCount')
                 if (cmdCount) cmdCount.innerHTML = `<i class="bi bi-terminal"></i> Total: ${data.commands.length} commands`
+                updatePopularCommands()
             }
             
-            // UPDATE SYSTEM INFO - FIX HERE
+            // Update system info
             if (data.system) {
                 updateSystemInfo(data.system)
-            } else if (data.stats && data.stats.system) {
-                updateSystemInfo(data.stats.system)
-            } else {
-                // Fallback ke data dari browser jika belum ada dari bot
-                updateSystemInfo({
-                    nodeVersion: navigator.userAgent,
-                    platform: 'Loading...',
-                    cpuCores: 'Waiting for bot data',
-                    memoryUsage: { rss: 0, heapTotal: 0, heapUsed: 0, external: 0 },
-                    uptime: 0
-                })
             }
             
-            // Load leaderboard
-            if (data.users && data.users.length > 0) {
+            // Update leaderboard
+            if (data.leaderboard) {
+                updateLeaderboardFromData(data.leaderboard)
+            } else if (data.users && data.users.length > 0) {
                 loadLeaderboard(currentLeaderboard)
+            }
+            
+            // Update registrations
+            if (data.registrations) {
+                updateRegistrationStats(data.registrations)
+            }
+            
+            // Update activity
+            if (data.activity) {
+                updateActivityStats(data.activity)
             }
             
             // Update status
             const botStatus = getElement('botStatus')
             if (botStatus) {
-                botStatus.innerHTML = 'Online ✅'
+                botStatus.innerHTML = '<i class="bi bi-check-circle-fill"></i> Online'
                 botStatus.className = 'status-online'
             }
             
             const lastUpdate = getElement('lastUpdate')
             if (lastUpdate && data.stats?.lastUpdate) {
                 lastUpdate.innerHTML = new Date(data.stats.lastUpdate).toLocaleString()
+                lastUpdateTime = data.stats.lastUpdate
+            }
+            
+            // Show notification for new data
+            if (lastUpdateTime && data.stats?.lastUpdate > lastUpdateTime) {
+                showNotification('Data dashboard telah diperbarui!', 'success')
             }
         }
     } catch (error) {
         console.error('Error loading data:', error)
         const botStatus = getElement('botStatus')
         if (botStatus) {
-            botStatus.innerHTML = 'Error ❌'
+            botStatus.innerHTML = '<i class="bi bi-x-circle-fill"></i> Offline'
             botStatus.className = 'status-offline'
         }
+        showNotification('Gagal terhubung ke bot!', 'error')
     }
 }
 
-// Update Stats Cards
+// ========== UPDATE STATS CARDS ==========
 function updateStats(stats) {
     const elements = {
         totalUsers: stats.totalUsers || 0,
         premiumUsers: stats.premiumUsers || 0,
+        registeredUsers: stats.registeredUsers || 0,
         totalGroups: stats.totalGroups || 0,
         totalCommands: stats.totalCommands || 0,
-        activeUsers: stats.activeUsers || 0
+        activeUsers: stats.activeUsers || 0,
+        totalMoney: stats.totalMoney || 0,
+        totalExp: stats.totalExp || 0
     }
     
     for (const [id, value] of Object.entries(elements)) {
@@ -114,7 +190,7 @@ function updateStats(stats) {
         if (elem) elem.innerHTML = value.toLocaleString()
     }
     
-    // Update uptime di stats card
+    // Update uptime
     if (stats.uptime) {
         const uptimeElem = getElement('uptime')
         if (uptimeElem) {
@@ -126,24 +202,23 @@ function updateStats(stats) {
     }
 }
 
-// UPDATE SYSTEM INFO - FIXED VERSION
+// ========== UPDATE SYSTEM INFO ==========
 function updateSystemInfo(system) {
     console.log('Updating system info:', system)
     
-    if (!system) {
-        console.warn('No system data received')
-        return
-    }
+    if (!system) return
     
-    // Bot Information
     const nodeVersion = getElement('nodeVersion')
-    if (nodeVersion) nodeVersion.innerHTML = system.nodeVersion || process.version || 'v18.17.0'
+    if (nodeVersion) nodeVersion.innerHTML = system.nodeVersion || '-'
     
     const platform = getElement('platform')
-    if (platform) platform.innerHTML = system.platform || process.platform || 'linux'
+    if (platform) platform.innerHTML = system.platform || '-'
+    
+    const arch = getElement('arch')
+    if (arch) arch.innerHTML = system.arch || '-'
     
     const cpuCores = getElement('cpuCores')
-    if (cpuCores) cpuCores.innerHTML = system.cpuCores || '4'
+    if (cpuCores) cpuCores.innerHTML = system.cpuCores || '-'
     
     const systemUptime = getElement('systemUptime')
     if (systemUptime && system.uptime) {
@@ -151,8 +226,6 @@ function updateSystemInfo(system) {
         const hours = Math.floor((system.uptime % 86400) / 3600)
         const minutes = Math.floor((system.uptime % 3600) / 60)
         systemUptime.innerHTML = `${days}d ${hours}h ${minutes}m`
-    } else if (systemUptime) {
-        systemUptime.innerHTML = 'Loading...'
     }
     
     // Memory Usage
@@ -169,7 +242,6 @@ function updateSystemInfo(system) {
         const external = getElement('external')
         if (external) external.innerHTML = formatBytes(system.memoryUsage.external || 0)
         
-        // Memory Status
         const memoryStatus = getElement('memoryStatus')
         if (memoryStatus && system.memoryUsage.heapTotal && system.memoryUsage.heapUsed) {
             const percent = (system.memoryUsage.heapUsed / system.memoryUsage.heapTotal) * 100
@@ -183,105 +255,154 @@ function updateSystemInfo(system) {
                 memoryStatus.innerHTML = '✅ Normal'
                 memoryStatus.className = 'text-success'
             }
-        } else if (memoryStatus) {
-            memoryStatus.innerHTML = '✅ Normal'
-            memoryStatus.className = 'text-success'
         }
-    } else {
-        // Set default values jika belum ada data
-        const defaultMemory = {
-            rss: 0,
-            heapTotal: 0,
-            heapUsed: 0,
-            external: 0
-        }
-        
-        const memoryRSS = getElement('memoryRSS')
-        if (memoryRSS) memoryRSS.innerHTML = formatBytes(0)
-        
-        const heapTotal = getElement('heapTotal')
-        if (heapTotal) heapTotal.innerHTML = formatBytes(0)
-        
-        const heapUsed = getElement('heapUsed')
-        if (heapUsed) heapUsed.innerHTML = formatBytes(0)
-        
-        const external = getElement('external')
-        if (external) external.innerHTML = formatBytes(0)
-        
-        const memoryStatus = getElement('memoryStatus')
-        if (memoryStatus) memoryStatus.innerHTML = '⏳ Waiting for data'
     }
 }
 
-// Format bytes
-function formatBytes(bytes) {
-    if (bytes === 0 || !bytes) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+// ========== UPDATE REGISTRATION STATS ==========
+function updateRegistrationStats(registrations) {
+    if (!registrations) return
+    
+    const regToday = getElement('regToday')
+    if (regToday) regToday.innerHTML = registrations.stats?.today || 0
+    
+    const regWeek = getElement('regWeek')
+    if (regWeek) regWeek.innerHTML = registrations.stats?.thisWeek || 0
+    
+    const regMonth = getElement('regMonth')
+    if (regMonth) regMonth.innerHTML = registrations.stats?.thisMonth || 0
+    
+    const regTotal = getElement('regTotal')
+    if (regTotal) regTotal.innerHTML = registrations.stats?.total || 0
+    
+    // Update recent registrations
+    const recentRegs = getElement('recentRegistrations')
+    if (recentRegs && registrations.recent) {
+        recentRegs.innerHTML = registrations.recent.slice(0, 5).map(reg => `
+            <div class="d-flex justify-content-between align-items-center p-2 border-bottom border-secondary">
+                <div>
+                    <i class="bi bi-person-plus-fill text-success"></i>
+                    <strong>${escapeHtml(reg.name)}</strong>
+                    <small class="text-white-50 d-block">${reg.number}</small>
+                </div>
+                <small class="text-white-50">${new Date(reg.time).toLocaleString()}</small>
+            </div>
+        `).join('')
+        if (registrations.recent.length === 0) {
+            recentRegs.innerHTML = '<div class="text-center text-white-50 py-3">Belum ada registrasi</div>'
+        }
+    }
 }
 
-// Leaderboard Functions
+// ========== UPDATE ACTIVITY STATS ==========
+function updateActivityStats(activity) {
+    if (!activity) return
+    
+    const activeToday = getElement('activeToday')
+    if (activeToday) activeToday.innerHTML = activity.today || 0
+    
+    const recentActivity = getElement('recentActivity')
+    if (recentActivity && activity.recent) {
+        recentActivity.innerHTML = activity.recent.slice(0, 5).map(act => `
+            <div class="d-flex justify-content-between align-items-center p-2 border-bottom border-secondary">
+                <div>
+                    <i class="bi bi-person-walking text-info"></i>
+                    <strong>${escapeHtml(act.name)}</strong>
+                    <small class="text-white-50 d-block">${act.number}</small>
+                </div>
+                <small class="text-white-50">${new Date(act.time).toLocaleString()}</small>
+            </div>
+        `).join('')
+        if (activity.recent.length === 0) {
+            recentActivity.innerHTML = '<div class="text-center text-white-50 py-3">Belum ada aktivitas</div>'
+        }
+    }
+}
+
+// ========== UPDATE POPULAR COMMANDS ==========
+function updatePopularCommands() {
+    const container = getElement('popularCommandsList')
+    if (!container) return
+    
+    container.innerHTML = popularCommands.map(cmd => `
+        <div class="col-md-6 mb-2">
+            <div class="d-flex align-items-center p-2 rounded" style="background: rgba(255,255,255,0.05);">
+                <code class="me-2" style="background: rgba(255,215,0,0.2); padding: 4px 8px; border-radius: 8px;">.${cmd.name}</code>
+                <small class="text-white-50">${cmd.description}</small>
+                <span class="badge bg-secondary ms-auto">${cmd.category}</span>
+            </div>
+        </div>
+    `).join('')
+}
+
+// ========== LEADERBOARD FUNCTIONS ==========
+function updateLeaderboardFromData(leaderboard) {
+    if (!leaderboard) return
+    
+    const expData = leaderboard.exp || []
+    const moneyData = leaderboard.money || []
+    const levelData = leaderboard.level || []
+    const limitData = leaderboard.limit || []
+    
+    // Update top 3
+    if (expData.length > 0) {
+        const firstName = getElement('firstName')
+        const firstValue = getElement('firstValue')
+        const secondName = getElement('secondName')
+        const secondValue = getElement('secondValue')
+        const thirdName = getElement('thirdName')
+        const thirdValue = getElement('thirdValue')
+        
+        if (firstName && expData[0]) firstName.innerHTML = expData[0].name
+        if (firstValue && expData[0]) firstValue.innerHTML = `EXP: ${expData[0].value.toLocaleString()}`
+        if (secondName && expData[1]) secondName.innerHTML = expData[1].name
+        if (secondValue && expData[1]) secondValue.innerHTML = `EXP: ${expData[1].value.toLocaleString()}`
+        if (thirdName && expData[2]) thirdName.innerHTML = expData[2].name
+        if (thirdValue && expData[2]) thirdValue.innerHTML = `EXP: ${expData[2].value.toLocaleString()}`
+    }
+    
+    // Update current leaderboard
+    loadLeaderboard(currentLeaderboard)
+}
+
 function loadLeaderboard(type) {
     currentLeaderboard = type
-    if (!allData.users || allData.users.length === 0) return
-    
-    let sorted = [...allData.users]
-    let title = ''
+    let data = []
     
     switch(type) {
         case 'exp':
-            sorted.sort((a, b) => (b.exp || 0) - (a.exp || 0))
-            title = '🏆 EXP Leaderboard'
+            data = allData.leaderboard?.exp || []
             break
         case 'money':
-            sorted.sort((a, b) => (b.money || 0) - (a.money || 0))
-            title = '💰 Money Leaderboard'
+            data = allData.leaderboard?.money || []
             break
         case 'level':
-            sorted.sort((a, b) => (b.level || 0) - (a.level || 0))
-            title = '⭐ Level Leaderboard'
+            data = allData.leaderboard?.level || []
             break
         case 'limit':
-            sorted.sort((a, b) => (b.limit || 0) - (a.limit || 0))
-            title = '🎫 Limit Leaderboard'
+            data = allData.leaderboard?.limit || []
             break
         default:
-            sorted.sort((a, b) => (b.exp || 0) - (a.exp || 0))
-            title = '🏆 EXP Leaderboard'
+            data = allData.leaderboard?.exp || []
     }
     
-    // Top 3
-    const top3 = sorted.slice(0, 3)
-    const firstName = getElement('firstName')
-    const firstValue = getElement('firstValue')
-    const secondName = getElement('secondName')
-    const secondValue = getElement('secondValue')
-    const thirdName = getElement('thirdName')
-    const thirdValue = getElement('thirdValue')
-    
-    if (firstName && top3[0]) firstName.innerHTML = top3[0].name || top3[0].number
-    if (firstValue && top3[0]) firstValue.innerHTML = `${type}: ${(top3[0][type] || 0).toLocaleString()}`
-    if (secondName && top3[1]) secondName.innerHTML = top3[1].name || top3[1].number
-    if (secondValue && top3[1]) secondValue.innerHTML = `${type}: ${(top3[1][type] || 0).toLocaleString()}`
-    if (thirdName && top3[2]) thirdName.innerHTML = top3[2].name || top3[2].number
-    if (thirdValue && top3[2]) thirdValue.innerHTML = `${type}: ${(top3[2][type] || 0).toLocaleString()}`
-    
-    // Full list
-    const top50 = sorted.slice(0, 50)
     const tbody = getElement('leaderboardList')
-    if (tbody) {
-        tbody.innerHTML = top50.map((user, idx) => `
-            <tr>
-                <td><strong>${idx + 1}</strong> ${getRankIcon(idx + 1)}</td>
-                <td><i class="bi bi-person-circle"></i> ${escapeHtml(user.name || user.number)}</td>
-                <td>${escapeHtml(user.number)}</td>
-                <td><strong>${(user[type] || 0).toLocaleString()}</strong></td>
-                <td>${user.isPremium ? '<span class="badge bg-warning text-dark">Premium</span>' : '<span class="badge bg-secondary">Free</span>'}</td>
-            </tr>
-        `).join('')
+    if (!tbody) return
+    
+    if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center">No data available</td></tr>'
+        return
     }
+    
+    tbody.innerHTML = data.slice(0, 50).map(user => `
+        <tr>
+            <td><strong>${user.rank}</strong> ${getRankIcon(user.rank)}</td>
+            <td><i class="bi bi-person-circle"></i> ${escapeHtml(user.name)}</td>
+            <td>${escapeHtml(user.number)}</td>
+            <td><strong>${user.value.toLocaleString()}</strong></td>
+            <td>${user.isPremium ? '<span class="badge bg-warning text-dark">Premium</span>' : '<span class="badge bg-secondary">Free</span>'}</td>
+        </tr>
+    `).join('')
 }
 
 function getRankIcon(rank) {
@@ -291,7 +412,7 @@ function getRankIcon(rank) {
     return ''
 }
 
-// Users Table
+// ========== USERS TABLE ==========
 function updateUsersTable(users) {
     const tbody = getElement('usersList')
     if (!tbody) return
@@ -319,7 +440,7 @@ function updateUsersTable(users) {
     updatePagination()
 }
 
-// Groups Table
+// ========== GROUPS TABLE ==========
 function updateGroupsTable(groups) {
     const tbody = getElement('groupsList')
     if (!tbody) return
@@ -339,7 +460,7 @@ function updateGroupsTable(groups) {
     `).join('')
 }
 
-// Commands Table
+// ========== COMMANDS TABLE ==========
 function updateCommandsTable(commands) {
     const tbody = getElement('commandsList')
     if (!tbody) return
@@ -363,7 +484,7 @@ function updateCommandsTable(commands) {
     `).join('')
 }
 
-// Pagination
+// ========== PAGINATION ==========
 function updatePagination() {
     const pagination = getElement('pagination')
     if (!pagination) return
@@ -392,46 +513,48 @@ function changePage(page) {
     if (allData.users) updateUsersTable(allData.users)
 }
 
-// Refresh Data
+// ========== REFRESH DATA ==========
 async function refreshData() {
+    showNotification('Memperbarui data...', 'info')
     setInnerHTML('usersList', '<tr><td colspan="6" class="text-center"><div class="spinner-border text-warning"></div> Loading...</td></tr>')
     await loadAllData()
     const refreshTime = getElement('refreshTime')
     if (refreshTime) refreshTime.innerHTML = new Date().toLocaleTimeString()
+    showNotification('Data berhasil diperbarui!', 'success')
 }
 
-// Test Connection
+// ========== TEST CONNECTION ==========
 async function testConnection() {
-    const toast = document.createElement('div')
-    toast.className = 'position-fixed top-0 start-50 translate-middle-x mt-3 p-3 rounded-3'
-    toast.style.background = '#1a1a2e'
-    toast.style.border = '1px solid rgba(255,215,0,0.3)'
-    toast.style.zIndex = '9999'
-    toast.style.minWidth = '300px'
-    toast.innerHTML = '<i class="bi bi-hourglass-split"></i> Checking...'
-    document.body.appendChild(toast)
+    showNotification('Mengecek koneksi ke bot...', 'info')
     
     try {
         const response = await fetch('/api/health')
         const data = await response.json()
-        toast.innerHTML = data.status === 'connected' 
-            ? '<i class="bi bi-check-circle text-success"></i> Connected to Bot!'
-            : '<i class="bi bi-clock text-warning"></i> Waiting for bot data...'
-        toast.style.borderColor = data.status === 'connected' ? '#4caf50' : '#ff9800'
+        
+        if (data.status === 'connected') {
+            showNotification(`✅ Terhubung ke bot! Last update: ${new Date(data.lastUpdate).toLocaleString()}`, 'success')
+        } else {
+            showNotification('⚠️ Menunggu data dari bot...', 'warning')
+        }
     } catch (error) {
-        toast.innerHTML = '<i class="bi bi-exclamation-triangle text-danger"></i> Connection failed!'
-        toast.style.borderColor = '#f44336'
+        showNotification(`❌ Gagal terhubung: ${error.message}`, 'error')
     }
-    setTimeout(() => toast.remove(), 3000)
 }
 
-// Escape HTML
+// ========== UTILITY FUNCTIONS ==========
+function formatBytes(bytes) {
+    if (bytes === 0 || !bytes) return '0 Bytes'
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
 function escapeHtml(str) {
     if (!str) return ''
     return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;')
 }
 
-// Update Live Time
 function updateLiveTime() {
     const liveTime = getElement('liveTime')
     if (liveTime) {
@@ -442,44 +565,77 @@ function updateLiveTime() {
     }
 }
 
-// Event Listeners
-const userLimit = getElement('userLimit')
-if (userLimit) userLimit.addEventListener('change', (e) => {
-    currentLimit = parseInt(e.target.value)
-    currentPage = 1
-    if (allData.users) updateUsersTable(allData.users)
+// ========== EXPORT FUNCTIONS TO GLOBAL ==========
+window.changePage = changePage
+window.refreshData = refreshData
+window.testConnection = testConnection
+window.loadLeaderboard = loadLeaderboard
+window.goToPage = changePage
+
+// ========== EVENT LISTENERS ==========
+document.addEventListener('DOMContentLoaded', () => {
+    // User limit change
+    const userLimit = getElement('userLimit')
+    if (userLimit) {
+        userLimit.addEventListener('change', (e) => {
+            currentLimit = parseInt(e.target.value)
+            currentPage = 1
+            if (allData.users) updateUsersTable(allData.users)
+        })
+    }
+    
+    // Command category filter
+    const commandCategory = getElement('commandCategory')
+    if (commandCategory) {
+        commandCategory.addEventListener('change', () => {
+            if (allData.commands) updateCommandsTable(allData.commands)
+        })
+    }
+    
+    // Search user
+    const searchUser = getElement('searchUser')
+    if (searchUser) {
+        let timeout
+        searchUser.addEventListener('input', (e) => {
+            clearTimeout(timeout)
+            timeout = setTimeout(() => {
+                const search = e.target.value.toLowerCase()
+                if (!allData.users) return
+                if (search.length < 2) {
+                    updateUsersTable(allData.users)
+                    return
+                }
+                const filtered = allData.users.filter(u => 
+                    (u.name || '').toLowerCase().includes(search) || 
+                    (u.number || '').includes(search)
+                )
+                updateUsersTable(filtered)
+            }, 500)
+        })
+    }
+    
+    // Leaderboard buttons
+    const lbExp = getElement('lbExp')
+    if (lbExp) lbExp.onclick = () => loadLeaderboard('exp')
+    
+    const lbMoney = getElement('lbMoney')
+    if (lbMoney) lbMoney.onclick = () => loadLeaderboard('money')
+    
+    const lbLevel = getElement('lbLevel')
+    if (lbLevel) lbLevel.onclick = () => loadLeaderboard('level')
+    
+    const lbLimit = getElement('lbLimit')
+    if (lbLimit) lbLimit.onclick = () => loadLeaderboard('limit')
 })
 
-const commandCategory = getElement('commandCategory')
-if (commandCategory) commandCategory.addEventListener('change', () => {
-    if (allData.commands) updateCommandsTable(allData.commands)
-})
-
-const searchUser = getElement('searchUser')
-if (searchUser) {
-    let timeout
-    searchUser.addEventListener('input', (e) => {
-        clearTimeout(timeout)
-        timeout = setTimeout(() => {
-            const search = e.target.value.toLowerCase()
-            if (!allData.users) return
-            if (search.length < 2) {
-                updateUsersTable(allData.users)
-                return
-            }
-            const filtered = allData.users.filter(u => 
-                (u.name || '').toLowerCase().includes(search) || 
-                (u.number || '').includes(search)
-            )
-            updateUsersTable(filtered)
-        }, 500)
-    })
-}
-
-// Auto refresh setiap 30 detik
+// ========== AUTO REFRESH ==========
+// Auto refresh every 30 seconds
 setInterval(() => loadAllData(), 30000)
+
+// Update live time every second
 setInterval(updateLiveTime, 1000)
 
 // Initial load
 updateLiveTime()
 loadAllData()
+showNotification('Dashboard siap! Data akan otomatis refresh setiap 30 detik.', 'success')
