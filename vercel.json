@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "functions": {
+    "api/*.js": {
+      "maxDuration": 10
+    }
+  },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/register", "destination": "/public/register.html" },
+    { "source": "/(.*)", "destination": "/public/index.html" }
+  ]
+}
