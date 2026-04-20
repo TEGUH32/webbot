@@ -13,18 +13,22 @@
         <!-- Header -->
         <div class="row mb-4">
             <div class="col-12">
-                <div class="alert alert-info d-flex justify-content-between align-items-center">
+                <div class="alert alert-info d-flex justify-content-between align-items-center flex-wrap">
                     <div>
                         <i class="bi bi-plug"></i> 
                         <strong>Bot Status:</strong> 
-                        <span id="botStatus" class="status-online">Checking...</span>
+                        <span id="botStatus">Checking...</span>
                     </div>
-                    <div>
+                    <div class="mt-2 mt-sm-0">
+                        <small class="me-3">
+                            <i class="bi bi-clock"></i> 
+                            Last Update: <span id="lastUpdate">-</span>
+                        </small>
                         <button class="btn btn-sm btn-outline-light me-2" onclick="refreshData()">
                             <i class="bi bi-arrow-repeat"></i> Refresh
                         </button>
                         <button class="btn btn-sm btn-outline-light" onclick="testConnection()">
-                            <i class="bi bi-wifi"></i> Test Connection
+                            <i class="bi bi-wifi"></i> Test
                         </button>
                     </div>
                 </div>
@@ -62,34 +66,6 @@
                     <div class="card-body">
                         <h6><i class="bi bi-terminal-fill"></i> Commands</h6>
                         <h2 id="totalCommands">0</h2>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Config Section (untuk setting API Key di frontend) -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card config-card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="bi bi-gear"></i> Configuration</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="alert alert-warning">
-                            <i class="bi bi-info-circle"></i>
-                            <strong>API Key sudah diatur di Environment Variables Vercel.</strong>
-                            Tidak perlu diinput manual di sini.
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label class="form-label">Bot API URL (from Vercel Env)</label>
-                                <input type="text" class="form-control" id="botApiUrl" readonly placeholder="Loading...">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">API Key Status</label>
-                                <input type="text" class="form-control" id="apiKeyStatus" readonly value="Checking...">
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -162,16 +138,10 @@
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
-                                <tr>
-                                    <th>Group Name</th>
-                                    <th>ID</th>
-                                    <th>Members</th>
-                                    <th>Features</th>
-                                    <th>Status</th>
-                                </tr>
+                                <tr><th>Group Name</th><th>ID</th><th>Members</th><th>Status</th></tr>
                             </thead>
                             <tbody id="groupsList">
-                                <tr><td colspan="5" class="text-center">Loading...</td></tr>
+                                <tr><td colspan="4" class="text-center">Loading...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -195,12 +165,7 @@
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
-                                <tr>
-                                    <th>Command</th>
-                                    <th>Category</th>
-                                    <th>Requirement</th>
-                                    <th>Description</th>
-                                </tr>
+                                <tr><th>Command</th><th>Category</th><th>Requirement</th><th>Description</th></tr>
                             </thead>
                             <tbody id="commandsList">
                                 <tr><td colspan="4" class="text-center">Loading...</td></tr>
@@ -210,9 +175,18 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Footer -->
+        <footer class="text-center text-white-50 mt-4">
+            <small>
+                <i class="bi bi-robot"></i> WhatsApp Bot Dashboard | 
+                Data updated every 30 seconds | 
+                <span id="refreshTime"></span>
+            </small>
+        </footer>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/dashboard.js"></script>
 </body>
-</html>
+    </html>
