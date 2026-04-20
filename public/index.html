@@ -13,7 +13,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         * {
@@ -27,7 +26,6 @@
             font-family: 'Inter', sans-serif;
             color: #ffffff;
             min-height: 100vh;
-            position: relative;
         }
 
         /* Animated Background */
@@ -43,7 +41,7 @@
             z-index: 0;
         }
 
-        /* Glassmorphism Effect */
+        /* Glassmorphism */
         .glass {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(10px);
@@ -369,6 +367,13 @@
             font-weight: 600;
         }
 
+        /* Footer */
+        footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 20px;
+            margin-top: 30px;
+        }
+
         /* Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
@@ -403,15 +408,6 @@
 
         .fade-in-up {
             animation: fadeInUp 0.5s ease forwards;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .pulse {
-            animation: pulse 2s infinite;
         }
 
         /* Responsive */
@@ -488,7 +484,7 @@
                         <li><a class="dropdown-item" href="#" onclick="refreshData()"><i class="bi bi-arrow-repeat"></i> Refresh</a></li>
                         <li><a class="dropdown-item" href="#" onclick="testConnection()"><i class="bi bi-wifi"></i> Test Connection</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="/register"><i class="bi bi-person-plus"></i> Register</a></li>
+                        <li><a class="dropdown-item" href="/chat"><i class="bi bi-chat-dots"></i> Public Chat</a></li>
                         <li><a class="dropdown-item" href="#" onclick="location.reload()"><i class="bi bi-bootstrap-reboot"></i> Reload</a></li>
                     </ul>
                 </div>
@@ -597,6 +593,20 @@
                         <h6><i class="bi bi-cash-stack me-1"></i> TOTAL MONEY</h6>
                         <h2 id="totalMoney">0</h2>
                         <i class="bi bi-cash-stack"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Card - Link ke Public Chat -->
+        <div class="row g-3 mb-4 fade-in-up">
+            <div class="col-12">
+                <div class="stat-card" onclick="window.location.href='/chat'" style="cursor: pointer;">
+                    <div class="card-body text-center">
+                        <i class="bi bi-chat-dots-fill fs-1 mb-2" style="color: #FFD700; position: static; opacity: 1;"></i>
+                        <h5 class="mb-1">💬 Public Chat Room</h5>
+                        <p class="text-white-50 small mb-0">Bercakap-cakap dengan pengguna lain di ruang obrolan publik</p>
+                        <small class="text-warning">Klik untuk masuk ke chat →</small>
                     </div>
                 </div>
             </div>
@@ -864,20 +874,35 @@
                         <div class="table-container h-100">
                             <h5 class="mb-3"><i class="bi bi-graph-up"></i> Registration Statistics</h5>
                             <table class="table table-borderless">
-                                <tr><td><i class="bi bi-calendar-day"></i> Today:</td><td><strong id="regToday">0</strong> users</td></tr>
-                                <tr><td><i class="bi bi-calendar-week"></i> This Week:</td><td><strong id="regWeek">0</strong> users</td></tr>
-                                <tr><td><i class="bi bi-calendar-month"></i> This Month:</td><td><strong id="regMonth">0</strong> users</td></tr>
-                                <tr><td><i class="bi bi-database"></i> Total Registered:</td><td><strong id="regTotal">0</strong> users</td></tr>
-                            </table>
+                                <tr><td><i class="bi bi-calendar-day"></i> Today:</td><td><strong id="regToday">0</strong> users</td>
+                                <tr>
+                                    <td><i class="bi bi-calendar-week"></i> This Week:</td>
+                                    <td><strong id="regWeek">0</strong> users</td>
+                                 '</td>
+                                <tr>
+                                    <td><i class="bi bi-calendar-month"></i> This Month:</td>
+                                    <td><strong id="regMonth">0</strong> users</td>
+                                 '</td>
+                                <tr>
+                                    <td><i class="bi bi-database"></i> Total Registered:</td>
+                                    <td><strong id="regTotal">0</strong> users</td>
+                                 '</td>
+                             </table>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="table-container h-100">
                             <h5 class="mb-3"><i class="bi bi-activity"></i> Activity Statistics</h5>
                             <table class="table table-borderless">
-                                <tr><td><i class="bi bi-person-walking"></i> Active Today:</td><td><strong id="activeToday">0</strong> users</td></tr>
-                                <tr><td><i class="bi bi-clock-history"></i> Last Update: </td><td><strong id="statsLastUpdate">-</strong></td></tr>
-                             </>
+                                <tr>
+                                    <td><i class="bi bi-person-walking"></i> Active Today:</td>
+                                    <td><strong id="activeToday">0</strong> users</td>
+                                 '</td>
+                                <tr>
+                                    <td><i class="bi bi-clock-history"></i> Last Update:</td>
+                                    <td><strong id="statsLastUpdate">-</strong></td>
+                                 '</td>
+                             </table>
                         </div>
                     </div>
                 </div>
@@ -901,7 +926,7 @@
         </div>
 
         <!-- Footer -->
-        <footer class="text-center text-white-50 mt-4 pt-3 border-top border-white-10">
+        <footer class="text-center text-white-50 mt-4 pt-3">
             <small>
                 <i class="bi bi-robot"></i> Alecia Premium Bot Dashboard |
                 <i class="bi bi-arrow-repeat"></i> Auto refresh every 30s |
