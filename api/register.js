@@ -1,5 +1,8 @@
 // api/register.js
-// User registration endpoint
+// Endpoint untuk registrasi dari website
+
+// Database registrasi sementara (akan diambil oleh bot)
+let pendingRegistrations = []
 
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*')
@@ -10,24 +13,21 @@ export default async function handler(req, res) {
         return res.status(200).end()
     }
     
+    // GET - ambil pending registrations (untuk bot)
     if (req.method === 'GET') {
+        const registrations = [...pendingRegistrations]
+        // Kosongkan setelah diambil
+        pendingRegistrations = []
         return res.status(200).json({
             success: true,
-            message: 'Registration endpoint is ready',
-            instructions: {
-                method: 'POST',
-                body: {
-                    number: '6281234567890',
-                    name: 'Nama User',
-                    age: 20
-                }
-            }
+            registrations: registrations
         })
     }
     
+    // POST - daftar baru dari website
     if (req.method === 'POST') {
         try {
-            const { number, name, age, referrer } = req.body
+            const { number, name, age } = req.body
             
             if (!number || !name) {
                 return res.status(400).json({
@@ -45,52 +45,26 @@ export default async function handler(req, res) {
                 cleanNumber = '62' + cleanNumber
             }
             
-            // Forward ke bot API
-            const botApiUrl = process.env.BOT_API_URL
-            const apiKey = process.env.API_KEY
-            
-            if (botApiUrl && apiKey) {
-                const response = await fetch(`${botApiUrl}/api/register-user`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'x-api-key': apiKey
-                    },
-                    body: JSON.stringify({
-                        jid: cleanNumber + '@s.whatsapp.net',
-                        number: cleanNumber,
-                        name: name,
-                        age: age || 0,
-                        referrer: referrer || null,
-                        registeredAt: new Date().toISOString()
-                    })
-                })
-                
-                const result = await response.json()
-                
-                if (result.success) {
-                    return res.status(200).json({
-                        success: true,
-                        message: 'Registrasi berhasil!',
-                        user: {
-                            number: cleanNumber,
-                            name: name,
-                            registeredAt: new Date().toISOString()
-                        }
-                    })
-                } else {
-                    return res.status(400).json({
-                        success: false,
-                        error: result.error || 'Gagal registrasi'
-                    })
-                }
+            // Simpan ke pending registrations
+            const newRegistration = {
+                number: cleanNumber,
+                name: name,
+                age: age || 0,
+                registeredAt: new Date().toISOString(),
+                status: 'pending'
             }
             
-            // Fallback response jika bot API tidak tersedia
+            pendingRegistrations.push(newRegistration)
+            
+            console.log(`📝 New registration from website: ${name} (${cleanNumber})`)
+            
             return res.status(200).json({
                 success: true,
-                message: 'Registrasi dicatat (offline mode)',
-                user: { number: cleanNumber, name: name }
+                message: 'Registrasi berhasil! Bot akan mengirim konfirmasi ke WhatsApp Anda dalam beberapa saat.',
+                user: {
+                    number: cleanNumber,
+                    name: name
+                }
             })
             
         } catch (error) {
