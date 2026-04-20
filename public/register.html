@@ -19,6 +19,46 @@
             max-width: 500px;
             margin: 50px auto;
             padding: 30px;
+            animation: fadeInUp 0.5s ease;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .register-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .register-header i {
+            font-size: 50px;
+            color: #667eea;
+        }
+        .register-header h2 {
+            color: #333;
+            margin-top: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            font-weight: 600;
+            color: #555;
+        }
+        .form-control {
+            border-radius: 10px;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            transition: all 0.3s;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102,126,234,0.25);
         }
         .btn-register {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -26,41 +66,141 @@
             border-radius: 10px;
             padding: 12px;
             font-weight: 600;
+            font-size: 16px;
             width: 100%;
             color: white;
+            transition: all 0.3s;
         }
         .btn-register:hover {
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .btn-register:disabled {
+            opacity: 0.7;
+            transform: none;
+        }
+        .info-text {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+        .benefits {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .benefits h5 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        .benefits ul {
+            padding-left: 20px;
+        }
+        .benefits li {
+            margin-bottom: 8px;
+            color: #555;
+        }
+        .alert {
+            border-radius: 10px;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        .step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin: 0 10px;
+            position: relative;
+        }
+        .step.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
+        }
+        .step.completed {
+            background: #4caf50;
+            color: white;
+        }
+        .step::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            width: 20px;
+            height: 2px;
+            background: #e0e0e0;
+        }
+        .step:last-child::after {
+            display: none;
+        }
+        @media (max-width: 768px) {
+            .register-card {
+                margin: 20px;
+                padding: 20px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="register-card">
-            <div class="text-center mb-4">
-                <i class="bi bi-robot fs-1" style="color: #667eea;"></i>
-                <h2 class="mt-2">Daftar Alecia Bot</h2>
+            <div class="register-header">
+                <i class="bi bi-robot"></i>
+                <h2>Daftar Alecia Bot</h2>
                 <p class="text-muted">Isi form berikut untuk mendaftar</p>
+            </div>
+            
+            <div class="step-indicator">
+                <div class="step active" id="step1">1</div>
+                <div class="step" id="step2">2</div>
+                <div class="step" id="step3">3</div>
             </div>
             
             <div id="alertMessage"></div>
             
             <form id="registerForm">
-                <div class="mb-3">
-                    <label class="form-label">Nomor WhatsApp *</label>
-                    <input type="tel" class="form-control" id="number" placeholder="6281234567890" required>
-                    <small class="text-muted">Masukkan nomor dengan kode negara (62)</small>
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="bi bi-whatsapp"></i> Nomor WhatsApp *
+                    </label>
+                    <input type="tel" class="form-control" id="number" 
+                           placeholder="Contoh: 6281234567890" required>
+                    <small class="text-muted">Masukkan nomor dengan kode negara (62), tanpa spasi</small>
                 </div>
                 
-                <div class="mb-3">
-                    <label class="form-label">Nama Lengkap *</label>
-                    <input type="text" class="form-control" id="name" placeholder="Nama kamu" required>
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="bi bi-person"></i> Nama Lengkap *
+                    </label>
+                    <input type="text" class="form-control" id="name" 
+                           placeholder="Nama kamu" required>
                 </div>
                 
-                <div class="mb-3">
-                    <label class="form-label">Usia</label>
-                    <input type="number" class="form-control" id="age" placeholder="Usia (opsional)">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="bi bi-calendar"></i> Usia
+                    </label>
+                    <input type="number" class="form-control" id="age" 
+                           placeholder="Usia (opsional)">
                 </div>
                 
                 <button type="submit" class="btn-register" id="submitBtn">
@@ -68,10 +208,19 @@
                 </button>
             </form>
             
-            <div class="mt-4 text-center">
-                <small class="text-muted">
-                    <i class="bi bi-shield-check"></i> Data kamu aman dan terenkripsi
-                </small>
+            <div class="benefits">
+                <h5><i class="bi bi-gift"></i> Bonus Pendaftaran:</h5>
+                <ul>
+                    <li><i class="bi bi-cash"></i> Rp 10,000 Money</li>
+                    <li><i class="bi bi-star"></i> 500 EXP</li>
+                    <li><i class="bi bi-ticket"></i> 50 Limit</li>
+                    <li><i class="bi bi-gem"></i> Akses semua fitur dasar</li>
+                </ul>
+            </div>
+            
+            <div class="info-text">
+                <i class="bi bi-shield-check"></i> Data kamu aman dan terenkripsi<br>
+                <i class="bi bi-whatsapp"></i> Bot akan mengirim konfirmasi ke WhatsApp Anda
             </div>
         </div>
     </div>
@@ -80,25 +229,88 @@
         const form = document.getElementById('registerForm');
         const alertDiv = document.getElementById('alertMessage');
         const submitBtn = document.getElementById('submitBtn');
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const step3 = document.getElementById('step3');
+        
+        function updateStep(step) {
+            step1.className = 'step';
+            step2.className = 'step';
+            step3.className = 'step';
+            
+            if (step >= 1) step1.className = 'step completed';
+            if (step >= 2) step2.className = 'step completed';
+            if (step >= 3) step3.className = 'step completed';
+            
+            if (step === 1) step1.className = 'step active';
+            if (step === 2) step2.className = 'step active';
+            if (step === 3) step3.className = 'step active';
+        }
+        
+        function showAlert(message, type) {
+            alertDiv.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}-fill"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                const alert = alertDiv.querySelector('.alert');
+                if (alert) {
+                    alert.classList.remove('show');
+                    setTimeout(() => alertDiv.innerHTML = '', 300);
+                }
+            }, 8000);
+        }
         
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Memproses...';
+            // Step 1: Validasi
+            updateStep(1);
             
             const number = document.getElementById('number').value;
             const name = document.getElementById('name').value;
             const age = document.getElementById('age').value;
             
+            if (!number) {
+                showAlert('Nomor WhatsApp wajib diisi!', 'danger');
+                return;
+            }
+            
+            if (!name) {
+                showAlert('Nama wajib diisi!', 'danger');
+                return;
+            }
+            
+            // Clean number
             let cleanNumber = number.replace(/[^0-9]/g, '');
-            if (cleanNumber.startsWith('0')) cleanNumber = '62' + cleanNumber.substring(1);
-            if (!cleanNumber.startsWith('62')) cleanNumber = '62' + cleanNumber;
+            if (cleanNumber.startsWith('0')) {
+                cleanNumber = '62' + cleanNumber.substring(1);
+            }
+            if (!cleanNumber.startsWith('62')) {
+                cleanNumber = '62' + cleanNumber;
+            }
+            
+            if (cleanNumber.length < 10) {
+                showAlert('Nomor WhatsApp tidak valid!', 'danger');
+                return;
+            }
+            
+            // Step 2: Proses registrasi
+            updateStep(2);
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Memproses...';
             
             try {
                 const response = await fetch('/api/register', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({
                         number: cleanNumber,
                         name: name,
@@ -109,19 +321,45 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    alertDiv.innerHTML = `<div class="alert alert-success">✅ Registrasi Berhasil! Selamat datang ${result.user.name}!</div>`;
+                    // Step 3: Selesai
+                    updateStep(3);
+                    
+                    showAlert(`
+                        <strong>✅ Registrasi Berhasil!</strong><br>
+                        Halo ${result.user.name}, selamat datang di Alecia Bot!<br><br>
+                        Bot akan mengirim pesan konfirmasi ke WhatsApp Anda dalam beberapa saat.<br>
+                        Pastikan nomor Anda aktif dan tidak memblokir pesan dari bot.
+                    `, 'success');
+                    
                     form.reset();
-                    setTimeout(() => { window.location.href = '/'; }, 2000);
+                    
+                    // Redirect ke dashboard setelah 3 detik
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 5000);
                 } else {
-                    alertDiv.innerHTML = `<div class="alert alert-danger">❌ ${result.error}</div>`;
+                    showAlert(`❌ Registrasi Gagal!<br>${result.error}`, 'danger');
+                    updateStep(1);
                 }
             } catch (error) {
-                alertDiv.innerHTML = `<div class="alert alert-danger">❌ Error: ${error.message}</div>`;
+                showAlert(`❌ Error!<br>${error.message}`, 'danger');
+                updateStep(1);
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="bi bi-check-circle"></i> Daftar Sekarang';
             }
         });
+        
+        // Number formatting
+        const numberInput = document.getElementById('number');
+        numberInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/[^0-9]/g, '');
+            if (value.startsWith('0')) {
+                value = '62' + value.substring(1);
+            }
+            e.target.value = value;
+        });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
