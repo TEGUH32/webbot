@@ -3,11 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Alecia Dashboard - Premium WhatsApp Bot</title>
+    <meta name="description" content="Alecia Bot Dashboard - Real-time monitoring untuk WhatsApp Bot Premium">
+    <meta name="author" content="Alecia Bot">
+    <meta name="theme-color" content="#FFD700">
+    <title>Alecia Dashboard | Premium WhatsApp Bot</title>
+    
+    <!-- Fonts & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -16,25 +23,42 @@
         }
 
         body {
-            background: #0f0f1a;
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
             font-family: 'Inter', sans-serif;
             color: #ffffff;
             min-height: 100vh;
+            position: relative;
+        }
+
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(255,215,0,0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
         }
 
         /* Glassmorphism Effect */
         .glass {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         /* Navbar */
         .navbar {
             background: rgba(15, 15, 26, 0.95);
             backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
             padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
 
         .navbar-brand {
@@ -55,11 +79,27 @@
         /* Stats Cards */
         .stat-card {
             background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 20px;
             transition: all 0.3s ease;
             cursor: pointer;
             overflow: hidden;
+            position: relative;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,215,0,0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .stat-card:hover::before {
+            left: 100%;
         }
 
         .stat-card:hover {
@@ -70,13 +110,15 @@
 
         .stat-card .card-body {
             padding: 20px;
+            position: relative;
+            z-index: 1;
         }
 
         .stat-card h6 {
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            opacity: 0.7;
+            letter-spacing: 1.5px;
+            opacity: 0.6;
             margin-bottom: 10px;
         }
 
@@ -84,7 +126,7 @@
             font-size: 2rem;
             font-weight: 700;
             margin-bottom: 0;
-            background: linear-gradient(135deg, #fff, #aaa);
+            background: linear-gradient(135deg, #fff, #ccc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -94,25 +136,27 @@
             bottom: 15px;
             right: 20px;
             font-size: 2.5rem;
-            opacity: 0.1;
+            opacity: 0.08;
         }
 
         /* Leaderboard Cards */
         .leaderboard-card {
-            background: linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.02) 100%);
-            border: 1px solid rgba(255, 215, 0, 0.2);
+            background: linear-gradient(135deg, rgba(255,215,0,0.08) 0%, rgba(255,215,0,0.02) 100%);
+            border: 1px solid rgba(255, 215, 0, 0.15);
             border-radius: 20px;
             transition: all 0.3s ease;
         }
 
         .leaderboard-card:hover {
-            border-color: rgba(255, 215, 0, 0.5);
-            transform: translateY(-3px);
+            border-color: rgba(255, 215, 0, 0.4);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
         .rank-1 {
             background: linear-gradient(135deg, #FFD700, #FFA500);
             color: #000;
+            box-shadow: 0 0 20px rgba(255,215,0,0.3);
         }
 
         .rank-2 {
@@ -126,14 +170,15 @@
         }
 
         .rank-badge {
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 1.2rem;
+            font-size: 1.5rem;
+            margin: 0 auto 15px;
         }
 
         /* Tabs */
@@ -145,12 +190,13 @@
 
         .nav-tabs .nav-link {
             color: rgba(255, 255, 255, 0.7);
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 10px 25px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 10px 24px;
             border-radius: 12px;
             transition: all 0.3s ease;
             font-weight: 500;
+            font-size: 0.9rem;
         }
 
         .nav-tabs .nav-link:hover {
@@ -164,6 +210,7 @@
             background: linear-gradient(135deg, #FFD700, #FFA500);
             color: #000;
             border-color: transparent;
+            font-weight: 600;
         }
 
         .nav-tabs .nav-link i {
@@ -172,7 +219,7 @@
 
         /* Tables */
         .table-container {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.02);
             border-radius: 20px;
             padding: 20px;
             border: 1px solid rgba(255, 255, 255, 0.05);
@@ -184,17 +231,18 @@
         }
 
         .table thead th {
-            border-bottom-color: rgba(255, 255, 255, 0.1);
+            border-bottom-color: rgba(255, 255, 255, 0.08);
             font-weight: 600;
-            padding: 12px;
+            padding: 15px 12px;
             text-transform: uppercase;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             letter-spacing: 1px;
+            color: rgba(255,255,255,0.7);
         }
 
         .table tbody tr {
             transition: all 0.3s ease;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
         }
 
         .table tbody tr:hover {
@@ -249,11 +297,13 @@
             border-radius: 12px;
             padding: 8px 20px;
             transition: all 0.3s ease;
+            font-weight: 500;
         }
 
         .btn-custom:hover {
-            background: rgba(255, 215, 0, 0.1);
-            border-color: rgba(255, 215, 0, 0.3);
+            background: rgba(255, 215, 0, 0.15);
+            border-color: rgba(255, 215, 0, 0.4);
+            color: white;
             transform: translateY(-2px);
         }
 
@@ -273,7 +323,7 @@
         }
 
         .pagination .page-link:hover {
-            background: rgba(255, 215, 0, 0.1);
+            background: rgba(255, 215, 0, 0.15);
             border-color: rgba(255, 215, 0, 0.3);
             transform: translateY(-2px);
         }
@@ -293,20 +343,30 @@
             color: #f44336;
         }
 
-        /* Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        /* Popular Commands */
+        .popular-commands {
+            background: linear-gradient(135deg, rgba(255,215,0,0.05) 0%, transparent 100%);
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 20px;
         }
 
-        .animate {
-            animation: fadeInUp 0.5s ease forwards;
+        .command-tag {
+            background: rgba(255,215,0,0.1);
+            border: 1px solid rgba(255,215,0,0.2);
+            border-radius: 10px;
+            padding: 8px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .command-tag:hover {
+            background: rgba(255,215,0,0.2);
+            transform: translateY(-2px);
+        }
+
+        .command-tag code {
+            color: #FFD700;
+            font-weight: 600;
         }
 
         /* Scrollbar */
@@ -327,6 +387,31 @@
 
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 215, 0, 0.5);
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
         }
 
         /* Responsive */
@@ -351,39 +436,78 @@
                 padding: 6px 12px;
                 font-size: 11px;
             }
+            
+            .rank-badge {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+            
+            .leaderboard-card h5 {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Loading Spinner */
+        .spinner-border-custom {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255,215,0,0.2);
+            border-top-color: #FFD700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
     <!-- Navbar -->
-    <nav class="navbar sticky-top">
+    <nav class="navbar">
         <div class="container-fluid">
             <div class="d-flex align-items-center">
                 <i class="bi bi-robot fs-2 me-2" style="color: #FFD700;"></i>
                 <span class="navbar-brand">ALECIA</span>
-                <span class="ms-2 px-2 py-1 rounded" style="background: rgba(255,215,0,0.1); font-size: 0.7rem;">PREMIUM</span>
+                <span class="ms-2 px-2 py-1 rounded" style="background: rgba(255,215,0,0.15); font-size: 0.65rem; font-weight: 600;">PREMIUM</span>
             </div>
             <div class="d-flex align-items-center gap-3">
                 <div class="d-none d-md-block">
                     <i class="bi bi-clock"></i>
                     <span id="liveTime" class="ms-1"></span>
                 </div>
-                <button class="btn btn-custom btn-sm" onclick="refreshData()">
+                <button class="btn btn-custom btn-sm" onclick="refreshData()" title="Refresh Data">
                     <i class="bi bi-arrow-repeat"></i>
                 </button>
+                <div class="dropdown">
+                    <button class="btn btn-custom btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark">
+                        <li><a class="dropdown-item" href="#" onclick="refreshData()"><i class="bi bi-arrow-repeat"></i> Refresh</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="testConnection()"><i class="bi bi-wifi"></i> Test Connection</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/register"><i class="bi bi-person-plus"></i> Register</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="location.reload()"><i class="bi bi-bootstrap-reboot"></i> Reload</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
     </nav>
 
     <div class="container-fluid py-4">
         <!-- Status Bar -->
-        <div class="row mb-4">
+        <div class="row mb-4 fade-in-up">
             <div class="col-12">
                 <div class="glass rounded-3 p-3 d-flex justify-content-between align-items-center flex-wrap">
                     <div>
-                        <i class="bi bi-plug me-2"></i>
-                        <strong>Bot Status:</strong>
-                        <span id="botStatus" class="ms-1">Checking...</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="spinner-border spinner-border-sm text-warning" style="width: 20px; height: 20px;" id="statusSpinner"></div>
+                            <i class="bi bi-plug me-1"></i>
+                            <strong>Bot Status:</strong>
+                            <span id="botStatus" class="ms-1">Checking...</span>
+                        </div>
                     </div>
                     <div class="mt-2 mt-sm-0">
                         <small class="me-3">
@@ -398,10 +522,10 @@
             </div>
         </div>
 
-        <!-- Stats Cards -->
-        <div class="row g-3 mb-4">
+        <!-- Stats Cards - Row 1 -->
+        <div class="row g-3 mb-4 fade-in-up">
             <div class="col-6 col-md-3">
-                <div class="stat-card position-relative">
+                <div class="stat-card">
                     <div class="card-body">
                         <h6><i class="bi bi-people-fill me-1"></i> TOTAL USERS</h6>
                         <h2 id="totalUsers">0</h2>
@@ -410,7 +534,7 @@
                 </div>
             </div>
             <div class="col-6 col-md-3">
-                <div class="stat-card position-relative">
+                <div class="stat-card">
                     <div class="card-body">
                         <h6><i class="bi bi-gem me-1"></i> PREMIUM USERS</h6>
                         <h2 id="premiumUsers">0</h2>
@@ -419,7 +543,16 @@
                 </div>
             </div>
             <div class="col-6 col-md-3">
-                <div class="stat-card position-relative">
+                <div class="stat-card">
+                    <div class="card-body">
+                        <h6><i class="bi bi-person-check-fill me-1"></i> REGISTERED</h6>
+                        <h2 id="registeredUsers">0</h2>
+                        <i class="bi bi-person-check-fill"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
                     <div class="card-body">
                         <h6><i class="bi bi-chat-dots-fill me-1"></i> TOTAL GROUPS</h6>
                         <h2 id="totalGroups">0</h2>
@@ -427,8 +560,12 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Stats Cards - Row 2 -->
+        <div class="row g-3 mb-4 fade-in-up">
             <div class="col-6 col-md-3">
-                <div class="stat-card position-relative">
+                <div class="stat-card">
                     <div class="card-body">
                         <h6><i class="bi bi-terminal-fill me-1"></i> COMMANDS</h6>
                         <h2 id="totalCommands">0</h2>
@@ -436,21 +573,17 @@
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Second Row Stats -->
-        <div class="row g-3 mb-4">
-            <div class="col-6 col-md-4">
-                <div class="stat-card position-relative">
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
                     <div class="card-body">
-                        <h6><i class="bi bi-person-check-fill me-1"></i> ACTIVE (24H)</h6>
+                        <h6><i class="bi bi-person-walking me-1"></i> ACTIVE (24H)</h6>
                         <h2 id="activeUsers">0</h2>
-                        <i class="bi bi-person-check-fill"></i>
+                        <i class="bi bi-person-walking"></i>
                     </div>
                 </div>
             </div>
-            <div class="col-6 col-md-4">
-                <div class="stat-card position-relative">
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
                     <div class="card-body">
                         <h6><i class="bi bi-hourglass-split me-1"></i> UPTIME</h6>
                         <h2 id="uptime">0</h2>
@@ -458,19 +591,19 @@
                     </div>
                 </div>
             </div>
-            <div class="col-6 col-md-4">
-                <div class="stat-card position-relative">
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
                     <div class="card-body">
-                        <h6><i class="bi bi-cpu me-1"></i> SYSTEM</h6>
-                        <h2 id="systemStatus">Online</h2>
-                        <i class="bi bi-cpu"></i>
+                        <h6><i class="bi bi-cash-stack me-1"></i> TOTAL MONEY</h6>
+                        <h2 id="totalMoney">0</h2>
+                        <i class="bi bi-cash-stack"></i>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Tabs Navigation -->
-        <ul class="nav nav-tabs mb-4" id="mainTab" role="tablist">
+        <ul class="nav nav-tabs mb-4 fade-in-up" id="mainTab" role="tablist">
             <li class="nav-item">
                 <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#leaderboard">
                     <i class="bi bi-trophy-fill"></i> Leaderboard
@@ -496,10 +629,15 @@
                     <i class="bi bi-info-circle-fill"></i> System
                 </button>
             </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#stats">
+                    <i class="bi bi-graph-up"></i> Stats
+                </button>
+            </li>
         </ul>
 
         <!-- Tab Content -->
-        <div class="tab-content">
+        <div class="tab-content fade-in-up">
             <!-- LEADERBOARD TAB -->
             <div class="tab-pane fade show active" id="leaderboard">
                 <div class="row">
@@ -518,7 +656,7 @@
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <div class="leaderboard-card text-center p-4 h-100" style="border-color: #FFD700;">
+                                <div class="leaderboard-card text-center p-4 h-100" style="border-color: #FFD700; box-shadow: 0 0 20px rgba(255,215,0,0.2);">
                                     <div class="rank-badge rank-1 mx-auto mb-3">🥇</div>
                                     <h5 id="firstName">Loading...</h5>
                                     <small class="text-white-50" id="firstValue">-</small>
@@ -537,10 +675,10 @@
                     <!-- Leaderboard Categories -->
                     <div class="col-12">
                         <div class="d-flex gap-2 mb-3 flex-wrap">
-                            <button class="btn btn-custom btn-sm" onclick="loadLeaderboard('exp')">🏆 EXP</button>
-                            <button class="btn btn-custom btn-sm" onclick="loadLeaderboard('money')">💰 MONEY</button>
-                            <button class="btn btn-custom btn-sm" onclick="loadLeaderboard('level')">⭐ LEVEL</button>
-                            <button class="btn btn-custom btn-sm" onclick="loadLeaderboard('limit')">🎫 LIMIT</button>
+                            <button class="btn btn-custom btn-sm" id="lbExp" onclick="loadLeaderboard('exp')">🏆 EXP</button>
+                            <button class="btn btn-custom btn-sm" id="lbMoney" onclick="loadLeaderboard('money')">💰 MONEY</button>
+                            <button class="btn btn-custom btn-sm" id="lbLevel" onclick="loadLeaderboard('level')">⭐ LEVEL</button>
+                            <button class="btn btn-custom btn-sm" id="lbLimit" onclick="loadLeaderboard('limit')">🎫 LIMIT</button>
                         </div>
                         <div class="table-container">
                             <div class="table-responsive">
@@ -555,7 +693,10 @@
                                         </tr>
                                     </thead>
                                     <tbody id="leaderboardList">
-                                        <tr><td colspan="5" class="text-center">Select a category...</td></tr>
+                                        <tr><td colspan="5" class="text-center">
+                                            <div class="spinner-border-custom mx-auto"></div>
+                                            <div class="mt-2">Loading leaderboard...</div>
+                                        </td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -597,7 +738,10 @@
                                 </tr>
                             </thead>
                             <tbody id="usersList">
-                                <tr><td colspan="6" class="text-center">Loading...</td></tr>
+                                <tr><td colspan="6" class="text-center">
+                                    <div class="spinner-border-custom mx-auto"></div>
+                                    <div class="mt-2">Loading users...</div>
+                                </td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -613,10 +757,18 @@
                     <div class="table-responsive">
                         <table class="table">
                             <thead>
-                                <tr><th>Group Name</th><th>ID</th><th>Members</th><th>Status</th></tr>
+                                <tr>
+                                    <th><i class="bi bi-chat-dots"></i> Group Name</th>
+                                    <th><i class="bi bi-hash"></i> ID</th>
+                                    <th><i class="bi bi-people"></i> Members</th>
+                                    <th><i class="bi bi-shield"></i> Status</th>
+                                </tr>
                             </thead>
                             <tbody id="groupsList">
-                                <tr><td colspan="4" class="text-center">Loading...</td></tr>
+                                <tr><td colspan="4" class="text-center">
+                                    <div class="spinner-border-custom mx-auto"></div>
+                                    <div class="mt-2">Loading groups...</div>
+                                </td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -635,6 +787,8 @@
                                 <option value="premium">💎 Premium</option>
                                 <option value="group">👥 Group</option>
                                 <option value="rpg">🎮 RPG</option>
+                                <option value="economy">💰 Economy</option>
+                                <option value="game">🎲 Game</option>
                             </select>
                         </div>
                         <div class="col-md-8 text-end">
@@ -646,12 +800,28 @@
                     <div class="table-responsive">
                         <table class="table">
                             <thead>
-                                <tr><th>Command</th><th>Category</th><th>Requirement</th><th>Description</th></tr>
+                                <tr>
+                                    <th>Command</th>
+                                    <th>Category</th>
+                                    <th>Requirement</th>
+                                    <th>Description</th>
+                                </tr>
                             </thead>
                             <tbody id="commandsList">
-                                <tr><td colspan="4" class="text-center">Loading...</td></tr>
+                                <tr><td colspan="4" class="text-center">
+                                    <div class="spinner-border-custom mx-auto"></div>
+                                    <div class="mt-2">Loading commands...</div>
+                                </td></tr>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+                
+                <!-- Popular Commands Section -->
+                <div class="popular-commands mt-4">
+                    <h5 class="mb-3"><i class="bi bi-star-fill text-warning"></i> Popular Commands</h5>
+                    <div class="row g-2" id="popularCommandsList">
+                        <div class="col-12 text-center text-white-50">Loading popular commands...</div>
                     </div>
                 </div>
             </div>
@@ -686,6 +856,48 @@
                     </div>
                 </div>
             </div>
+
+            <!-- STATS TAB -->
+            <div class="tab-pane fade" id="stats">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="table-container h-100">
+                            <h5 class="mb-3"><i class="bi bi-graph-up"></i> Registration Statistics</h5>
+                            <table class="table table-borderless">
+                                <tr><td><i class="bi bi-calendar-day"></i> Today:</td><td><strong id="regToday">0</strong> users</td></tr>
+                                <tr><td><i class="bi bi-calendar-week"></i> This Week:</td><td><strong id="regWeek">0</strong> users</td></tr>
+                                <tr><td><i class="bi bi-calendar-month"></i> This Month:</td><td><strong id="regMonth">0</strong> users</td></tr>
+                                <tr><td><i class="bi bi-database"></i> Total Registered:</td><td><strong id="regTotal">0</strong> users</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="table-container h-100">
+                            <h5 class="mb-3"><i class="bi bi-activity"></i> Activity Statistics</h5>
+                            <table class="table table-borderless">
+                                <tr><td><i class="bi bi-person-walking"></i> Active Today:</td><td><strong id="activeToday">0</strong> users</td></tr>
+                                <tr><td><i class="bi bi-clock-history"></i> Last Update: </td><td><strong id="statsLastUpdate">-</strong></td></tr>
+                             </>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Registrations -->
+                <div class="table-container mt-3">
+                    <h5 class="mb-3"><i class="bi bi-person-plus-fill"></i> Recent Registrations</h5>
+                    <div id="recentRegistrations" class="mt-2">
+                        <div class="text-center text-white-50 py-3">Loading...</div>
+                    </div>
+                </div>
+                
+                <!-- Recent Activity -->
+                <div class="table-container mt-3">
+                    <h5 class="mb-3"><i class="bi bi-clock-history"></i> Recent Activity</h5>
+                    <div id="recentActivity" class="mt-2">
+                        <div class="text-center text-white-50 py-3">Loading...</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Footer -->
@@ -693,7 +905,8 @@
             <small>
                 <i class="bi bi-robot"></i> Alecia Premium Bot Dashboard |
                 <i class="bi bi-arrow-repeat"></i> Auto refresh every 30s |
-                <i class="bi bi-shield-check"></i> Secure Connection
+                <i class="bi bi-shield-check"></i> Secure Connection |
+                <i class="bi bi-clock"></i> <span id="refreshTime"></span>
             </small>
         </footer>
     </div>
