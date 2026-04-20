@@ -1,5 +1,7 @@
 node_modules/
+.vercel/
 .env
-.vercel
 *.log
 .DS_Store
+tmp/*.json
+!tmp/.gitkeep
