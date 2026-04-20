@@ -1,5 +1,5 @@
 // api/health.js
-// Health check dengan informasi lengkap
+// Health check endpoint
 
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*')
@@ -14,29 +14,18 @@ export default async function handler(req, res) {
         const host = req.headers['host']
         const baseUrl = `${protocol}://${host}`
         
-        const response = await fetch(`${baseUrl}/api/bot-data`)
+        const response = await fetch(`${baseUrl}/api/bot-data?type=health`)
         const data = await response.json()
         
         res.status(200).json({
             status: 'connected',
             botName: 'Alecia Bot',
             version: '2.0.0 Premium',
-            lastUpdate: data.stats?.lastUpdate || null,
+            lastUpdate: data.lastUpdate || null,
             stats: {
-                totalUsers: data.stats?.totalUsers || 0,
-                premiumUsers: data.stats?.premiumUsers || 0,
-                totalGroups: data.stats?.totalGroups || 0,
-                activeUsers: data.stats?.activeUsers || 0,
-                totalCommands: data.stats?.totalCommands || 0
-            },
-            registrations: {
-                today: data.registrations?.today || 0,
-                total: data.registrations?.total || 0
-            },
-            system: {
-                uptime: data.system?.uptime || 0,
-                nodeVersion: data.system?.nodeVersion || process.version,
-                platform: data.system?.platform || process.platform
+                totalUsers: data.totalUsers || 0,
+                premiumUsers: data.premiumUsers || 0,
+                totalGroups: data.totalGroups || 0
             },
             timestamp: new Date().toISOString()
         })
