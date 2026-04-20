@@ -1,5 +1,5 @@
 // api/health.js
-import axios from 'axios'
+// Health check endpoint
 
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*')
@@ -10,17 +10,23 @@ export default async function handler(req, res) {
     }
     
     try {
+        // Ambil data dari bot-data
         const protocol = req.headers['x-forwarded-proto'] || 'https'
         const host = req.headers['host']
         const baseUrl = `${protocol}://${host}`
         
-        const response = await axios.get(`${baseUrl}/api/bot-data`)
-        const data = response.data
+        // Fetch internal data
+        const response = await fetch(`${baseUrl}/api/bot-data`)
+        const data = await response.json()
         
         res.status(200).json({
             status: 'connected',
             lastUpdate: data.stats?.lastUpdate || null,
             totalUsers: data.stats?.totalUsers || 0,
+            premiumUsers: data.stats?.premiumUsers || 0,
+            totalGroups: data.stats?.totalGroups || 0,
+            uptime: data.system?.uptime || 0,
+            nodeVersion: data.system?.nodeVersion || process.version,
             timestamp: new Date().toISOString()
         })
     } catch (error) {
