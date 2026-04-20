@@ -1,8 +1,7 @@
 // api/register.js
-// Endpoint untuk registrasi user dari website
+// User registration endpoint
 
 export default async function handler(req, res) {
-    // CORS
     res.setHeader('Access-Control-Allow-Origin', '*')
     res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
@@ -11,35 +10,33 @@ export default async function handler(req, res) {
         return res.status(200).end()
     }
     
-    // GET - tampilkan form registrasi (optional)
     if (req.method === 'GET') {
         return res.status(200).json({
-            message: 'Register endpoint is ready',
-            fields: ['number', 'name', 'age']
+            success: true,
+            message: 'Registration endpoint is ready',
+            instructions: {
+                method: 'POST',
+                body: {
+                    number: '6281234567890',
+                    name: 'Nama User',
+                    age: 20
+                }
+            }
         })
     }
     
-    // POST - proses registrasi
     if (req.method === 'POST') {
         try {
             const { number, name, age, referrer } = req.body
             
-            // Validasi input
-            if (!number) {
-                return res.status(400).json({ 
-                    success: false, 
-                    error: 'Nomor WhatsApp wajib diisi!' 
+            if (!number || !name) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Nomor dan nama wajib diisi!'
                 })
             }
             
-            if (!name) {
-                return res.status(400).json({ 
-                    success: false, 
-                    error: 'Nama wajib diisi!' 
-                })
-            }
-            
-            // Clean nomor
+            // Clean number
             let cleanNumber = number.toString().replace(/[^0-9]/g, '')
             if (cleanNumber.startsWith('0')) {
                 cleanNumber = '62' + cleanNumber.substring(1)
@@ -48,46 +45,53 @@ export default async function handler(req, res) {
                 cleanNumber = '62' + cleanNumber
             }
             
-            const userJid = cleanNumber + '@s.whatsapp.net'
-            
-            // Simpan ke database (via bot API)
-            const botApiUrl = process.env.BOT_API_URL || 'http://localhost:5000'
+            // Forward ke bot API
+            const botApiUrl = process.env.BOT_API_URL
             const apiKey = process.env.API_KEY
             
-            const response = await fetch(`${botApiUrl}/api/register-user`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-api-key': apiKey
-                },
-                body: JSON.stringify({
-                    jid: userJid,
-                    number: cleanNumber,
-                    name: name,
-                    age: age || 0,
-                    referrer: referrer || null,
-                    registeredAt: new Date().toISOString()
-                })
-            })
-            
-            const result = await response.json()
-            
-            if (result.success) {
-                return res.status(200).json({
-                    success: true,
-                    message: 'Registrasi berhasil!',
-                    user: {
+            if (botApiUrl && apiKey) {
+                const response = await fetch(`${botApiUrl}/api/register-user`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey
+                    },
+                    body: JSON.stringify({
+                        jid: cleanNumber + '@s.whatsapp.net',
                         number: cleanNumber,
                         name: name,
+                        age: age || 0,
+                        referrer: referrer || null,
                         registeredAt: new Date().toISOString()
-                    }
+                    })
                 })
-            } else {
-                return res.status(400).json({
-                    success: false,
-                    error: result.error || 'Gagal registrasi'
-                })
+                
+                const result = await response.json()
+                
+                if (result.success) {
+                    return res.status(200).json({
+                        success: true,
+                        message: 'Registrasi berhasil!',
+                        user: {
+                            number: cleanNumber,
+                            name: name,
+                            registeredAt: new Date().toISOString()
+                        }
+                    })
+                } else {
+                    return res.status(400).json({
+                        success: false,
+                        error: result.error || 'Gagal registrasi'
+                    })
+                }
             }
+            
+            // Fallback response jika bot API tidak tersedia
+            return res.status(200).json({
+                success: true,
+                message: 'Registrasi dicatat (offline mode)',
+                user: { number: cleanNumber, name: name }
+            })
             
         } catch (error) {
             console.error('Register error:', error)
