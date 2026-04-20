@@ -2,11 +2,16 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Public Chat - Alecia Bot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="description" content="Public Chat - Alecia Bot Community">
+    <meta name="theme-color" content="#FFD700">
+    <title>Public Chat | Alecia Bot Community</title>
+    
+    <!-- Fonts & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
         * {
             margin: 0;
@@ -15,53 +20,93 @@
         }
 
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
             font-family: 'Inter', sans-serif;
+            color: #ffffff;
             min-height: 100vh;
+        }
+
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(255,215,0,0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
         }
 
         /* Navbar */
         .navbar {
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(15, 15, 26, 0.95);
             backdrop-filter: blur(10px);
-            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+            padding: 12px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
 
         .navbar-brand {
-            font-weight: 700;
-            font-size: 1.5rem;
-            color: #FFD700;
+            font-weight: 800;
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .navbar-brand i {
-            margin-right: 10px;
+            background: none;
+            -webkit-text-fill-color: #FFD700;
+            margin-right: 8px;
         }
 
         /* Chat Container */
-        .chat-container {
+        .chat-wrapper {
             max-width: 900px;
             margin: 20px auto;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
             overflow: hidden;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
         }
 
+        /* Chat Header */
         .chat-header {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            padding: 20px;
-            color: white;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .chat-header h4 {
             margin: 0;
             font-weight: 600;
+            font-size: 1.1rem;
         }
 
-        .chat-header p {
-            margin: 5px 0 0;
-            opacity: 0.9;
-            font-size: 0.85rem;
+        .chat-header h4 i {
+            color: #FFD700;
+            margin-right: 8px;
+        }
+
+        .online-badge {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+            font-size: 0.7rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .online-badge i {
+            font-size: 0.6rem;
+            margin-right: 4px;
         }
 
         /* Messages Area */
@@ -69,10 +114,10 @@
             height: 500px;
             overflow-y: auto;
             padding: 20px;
-            background: #f8f9fa;
+            background: rgba(0, 0, 0, 0.2);
         }
 
-        /* Message Bubble */
+        /* Message Bubble Styles - Seperti WhatsApp */
         .message {
             margin-bottom: 20px;
             animation: fadeInUp 0.3s ease;
@@ -81,7 +126,7 @@
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(15px);
             }
             to {
                 opacity: 1;
@@ -89,166 +134,237 @@
             }
         }
 
+        /* Avatar */
         .message-avatar {
-            width: 45px;
-            height: 45px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 1.2rem;
+            font-weight: 700;
+            font-size: 1rem;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
 
+        /* Message Content */
         .message-content {
             flex: 1;
-            margin-left: 15px;
+            margin-left: 12px;
         }
 
+        /* Message Header (Nama & Badge) */
         .message-name {
             font-weight: 600;
-            margin-bottom: 5px;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
             display: flex;
             align-items: center;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 6px;
         }
 
+        /* Verified Badge - Centang Biru */
         .verified-badge {
             background: #1da1f2;
             color: white;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             padding: 2px 8px;
             border-radius: 20px;
             display: inline-flex;
             align-items: center;
             gap: 4px;
+            font-weight: 500;
+        }
+
+        .verified-badge i {
+            font-size: 0.7rem;
         }
 
         .owner-badge {
-            background: #FFD700;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
             color: #000;
         }
 
-        .message-text {
-            background: white;
-            padding: 12px 15px;
-            border-radius: 15px;
-            border-top-left-radius: 5px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        /* Message Bubble */
+        .message-bubble {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 10px 14px;
+            border-radius: 18px;
+            border-top-left-radius: 4px;
             word-wrap: break-word;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            max-width: 100%;
+        }
+
+        /* Message Footer (Waktu & Like) */
+        .message-footer {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 5px;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.4);
         }
 
         .message-time {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .message-time i {
+            font-size: 0.65rem;
+        }
+
+        /* Like Button */
+        .like-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.4);
             font-size: 0.7rem;
-            color: #999;
-            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .like-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ff4757;
+            transform: scale(1.05);
+        }
+
+        .like-btn.liked {
+            color: #ff4757;
+        }
+
+        .like-btn.liked i {
+            animation: heartBeat 0.3s ease;
+        }
+
+        @keyframes heartBeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+
+        /* Delete Button */
+        .delete-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .delete-btn:hover {
+            background: rgba(255, 68, 68, 0.2);
+            color: #ff4444;
         }
 
         /* Input Area */
         .input-area {
-            padding: 20px;
-            background: white;
-            border-top: 1px solid #eee;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .input-group-custom {
             display: flex;
             gap: 10px;
+            align-items: flex-end;
         }
 
-        .input-group-custom input {
-            flex: 1;
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            padding: 12px 15px;
-            font-size: 0.9rem;
+        .input-name {
+            width: 140px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 12px 16px;
+            color: white;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
         }
 
-        .input-group-custom input:focus {
+        .input-name:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #FFD700;
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .input-message {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 12px 16px;
+            color: white;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-message:focus {
+            outline: none;
+            border-color: #FFD700;
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .input-message::placeholder {
+            color: rgba(255, 255, 255, 0.4);
         }
 
         .btn-send {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #FFD700, #FFA500);
             border: none;
-            border-radius: 12px;
-            padding: 0 25px;
-            color: white;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
             font-weight: 600;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            cursor: pointer;
         }
 
         .btn-send:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255,215,0,0.3);
         }
 
-        /* Loading */
-        .loading {
+        .btn-send:active {
+            transform: scale(0.95);
+        }
+
+        /* Loading & Empty State */
+        .loading-state, .empty-state {
             text-align: center;
-            padding: 20px;
-            color: #999;
+            padding: 50px 20px;
+            color: rgba(255, 255, 255, 0.5);
         }
 
-        /* Empty state */
-        .empty-chat {
-            text-align: center;
-            padding: 50px;
-            color: #999;
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255,215,0,0.2);
+            border-top-color: #FFD700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
         }
 
-        /* Like button */
-        .like-btn {
-            background: none;
-            border: none;
-            color: #999;
-            font-size: 0.8rem;
-            margin-top: 5px;
-            transition: all 0.3s;
-        }
-
-        .like-btn:hover {
-            color: #e74c3c;
-            transform: scale(1.1);
-        }
-
-        .like-btn.liked {
-            color: #e74c3c;
-        }
-
-        /* Delete button */
-        .delete-btn {
-            background: none;
-            border: none;
-            color: #999;
-            font-size: 0.8rem;
-            margin-left: 10px;
-        }
-
-        .delete-btn:hover {
-            color: #e74c3c;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .chat-container {
-                margin: 10px;
-            }
-            .messages-area {
-                height: 400px;
-            }
-            .message-avatar {
-                width: 35px;
-                height: 35px;
-                font-size: 0.9rem;
-            }
-            .message-text {
-                font-size: 0.85rem;
-            }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         /* Scrollbar */
@@ -257,12 +373,70 @@
         }
 
         .messages-area::-webkit-scrollbar-track {
-            background: #f1f1f1;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
         }
 
         .messages-area::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 5px;
+            background: rgba(255, 215, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        /* Info Bar */
+        .info-bar {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 20px;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .chat-wrapper {
+                margin: 10px;
+                border-radius: 16px;
+            }
+            
+            .messages-area {
+                height: 450px;
+                padding: 15px;
+            }
+            
+            .message-avatar {
+                width: 35px;
+                height: 35px;
+                font-size: 0.85rem;
+            }
+            
+            .message-bubble {
+                font-size: 0.8rem;
+                padding: 8px 12px;
+            }
+            
+            .input-name {
+                width: 100px;
+                padding: 10px 12px;
+                font-size: 0.75rem;
+            }
+            
+            .btn-send {
+                width: 42px;
+                height: 42px;
+            }
+            
+            .message-name {
+                font-size: 0.8rem;
+            }
+            
+            .verified-badge {
+                font-size: 0.55rem;
+                padding: 1px 6px;
+            }
         }
     </style>
 </head>
@@ -273,7 +447,7 @@
             <div>
                 <i class="bi bi-chat-dots-fill fs-3 me-2" style="color: #FFD700;"></i>
                 <span class="navbar-brand">PUBLIC CHAT</span>
-                <span class="badge bg-warning text-dark ms-2" id="onlineCount">● Live</span>
+                <span class="ms-2 px-2 py-1 rounded" style="background: rgba(255,215,0,0.15); font-size: 0.65rem; font-weight: 600;">COMMUNITY</span>
             </div>
             <div>
                 <a href="/" class="btn btn-outline-light btn-sm">
@@ -284,106 +458,173 @@
     </nav>
 
     <div class="container">
-        <div class="chat-container">
-            <div class="chat-header">
-                <h4><i class="bi bi-chat-dots-fill"></i> Ruang Obrolan Publik</h4>
-                <p>Bercakap-cakap dengan pengguna lain dengan sopan ya!</p>
-            </div>
-
-            <div class="messages-area" id="messagesArea">
-                <div class="loading">
-                    <div class="spinner-border text-primary"></div>
-                    <p class="mt-2">Memuat pesan...</p>
+        <div class="chat-wrapper">
+            <!-- Chat Header -->
+            <div class="chat-header d-flex justify-content-between align-items-center">
+                <h4>
+                    <i class="bi bi-chat-dots-fill"></i> Ruang Obrolan Publik
+                </h4>
+                <div class="online-badge">
+                    <i class="bi bi-circle-fill"></i> Live
                 </div>
             </div>
 
+            <!-- Info Bar -->
+            <div class="info-bar">
+                <div>
+                    <i class="bi bi-info-circle"></i> 
+                    <span id="messageCount">0</span> pesan • 
+                    <span id="userCount">0</span> pengguna
+                </div>
+                <div>
+                    <i class="bi bi-patch-check-fill" style="color: #1da1f2;"></i> 
+                    Centang biru = Terverifikasi
+                </div>
+            </div>
+
+            <!-- Messages Area -->
+            <div class="messages-area" id="messagesArea">
+                <div class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p>Memuat pesan...</p>
+                </div>
+            </div>
+
+            <!-- Input Area -->
             <div class="input-area">
                 <div class="input-group-custom">
-                    <input type="text" id="nameInput" class="form-control" placeholder="Nama Anda" maxlength="30">
-                    <input type="text" id="messageInput" class="form-control" placeholder="Tulis pesan..." maxlength="500">
+                    <input type="text" id="nameInput" class="input-name" placeholder="Nama" maxlength="25" autocomplete="off">
+                    <input type="text" id="messageInput" class="input-message" placeholder="Tulis pesan..." maxlength="500" autocomplete="off">
                     <button class="btn-send" onclick="sendMessage()">
-                        <i class="bi bi-send"></i> Kirim
+                        <i class="bi bi-send-fill"></i>
                     </button>
                 </div>
-                <small class="text-muted d-block mt-2">
-                    <i class="bi bi-info-circle"></i> 
-                    Pengguna dengan centang biru adalah pengguna terverifikasi. 
-                    <span class="text-warning">👑 Teguh</span> adalah Owner dengan centang biru!
-                </small>
+                <div class="text-center mt-2">
+                    <small style="color: rgba(255,255,255,0.3); font-size: 0.65rem;">
+                        <i class="bi bi-shield-check"></i> 
+                        Bergabunglah dengan percakapan yang sopan dan menghargai sesama.
+                    </small>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        // ========== GLOBAL VARIABLES ==========
         let comments = [];
-        let verifiedUsers = [];
         let currentName = localStorage.getItem('chatName') || '';
-        
-        // Load name from localStorage
+        let autoRefreshInterval = null;
+        let likedMessages = JSON.parse(localStorage.getItem('likedMessages') || '{}');
+
+        // ========== DOM ELEMENTS ==========
+        const messagesArea = document.getElementById('messagesArea');
+        const nameInput = document.getElementById('nameInput');
+        const messageInput = document.getElementById('messageInput');
+        const messageCountSpan = document.getElementById('messageCount');
+        const userCountSpan = document.getElementById('userCount');
+
+        // Set name from localStorage
         if (currentName) {
-            document.getElementById('nameInput').value = currentName;
+            nameInput.value = currentName;
         }
-        
-        // Load messages
-        async function loadMessages() {
-            try {
-                const response = await fetch('/api/comments?limit=100');
-                const data = await response.json();
-                
-                if (data.success) {
-                    comments = data.comments;
-                    verifiedUsers = data.verifiedUsers || [];
-                    renderMessages();
-                }
-            } catch (error) {
-                console.error('Error loading messages:', error);
-            }
+
+        // ========== HELPER FUNCTIONS ==========
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
         }
-        
-        // Render messages
-        function renderMessages() {
-            const area = document.getElementById('messagesArea');
+
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
             
+            if (diff < 60000) return 'Baru saja';
+            if (diff < 3600000) return `${Math.floor(diff / 60000)} menit lalu`;
+            if (diff < 86400000) return `${Math.floor(diff / 3600000)} jam lalu`;
+            if (diff < 604800000) return `${Math.floor(diff / 86400000)} hari lalu`;
+            return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        function getAvatarColor(name) {
+            const colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b', '#fa709a', '#FFD700', '#ff6b6b'];
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = ((hash << 5) - hash) + name.charCodeAt(i);
+                hash |= 0;
+            }
+            return colors[Math.abs(hash) % colors.length];
+        }
+
+        function getInitials(name) {
+            return name.charAt(0).toUpperCase();
+        }
+
+        function canDelete(commentName, currentUserName) {
+            // Owner (Teguh) bisa hapus semua, user biasa hanya bisa hapus pesan sendiri
+            return commentName === 'Teguh' || commentName === currentUserName;
+        }
+
+        // ========== RENDER MESSAGES ==========
+        function renderMessages() {
             if (!comments || comments.length === 0) {
-                area.innerHTML = `
-                    <div class="empty-chat">
-                        <i class="bi bi-chat-dots fs-1"></i>
-                        <p class="mt-2">Belum ada pesan. Jadilah yang pertama!</p>
+                messagesArea.innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-chat-dots fs-1" style="color: rgba(255,255,255,0.3);"></i>
+                        <p class="mt-3">Belum ada pesan. Jadilah yang pertama!</p>
+                        <small style="color: rgba(255,255,255,0.3);">Mulai percakapan dengan mengetik pesan di bawah</small>
                     </div>
                 `;
+                if (messageCountSpan) messageCountSpan.innerText = '0';
+                if (userCountSpan) userCountSpan.innerText = '0';
                 return;
             }
-            
-            area.innerHTML = comments.map(comment => {
-                const isVerified = comment.isVerified;
-                const verifiedInfo = verifiedUsers.find(v => v.name === comment.name);
-                const badgeText = comment.verifiedBadge || (verifiedInfo ? verifiedInfo.badge : '');
+
+            // Hitung unique users
+            const uniqueUsers = [...new Set(comments.map(c => c.name))];
+            if (userCountSpan) userCountSpan.innerText = uniqueUsers.length;
+            if (messageCountSpan) messageCountSpan.innerText = comments.length;
+
+            // Render messages
+            messagesArea.innerHTML = comments.map(comment => {
                 const isOwner = comment.name === 'Teguh';
+                const isVerified = comment.isVerified;
+                const badgeText = comment.verifiedBadge || (isOwner ? 'Owner' : 'Verified');
+                const isLiked = likedMessages[comment.id];
+                const canUserDelete = canDelete(comment.name, currentName);
                 
                 return `
                     <div class="message d-flex" data-id="${comment.id}">
                         <div class="message-avatar" style="background: ${getAvatarColor(comment.name)}">
-                            ${comment.name.charAt(0).toUpperCase()}
+                            ${getInitials(comment.name)}
                         </div>
                         <div class="message-content">
                             <div class="message-name">
                                 <span>${escapeHtml(comment.name)}</span>
-                                ${isVerified ? `<span class="verified-badge ${isOwner ? 'owner-badge' : ''}">
-                                    <i class="bi bi-patch-check-fill"></i> ${badgeText || 'Verified'}
-                                </span>` : ''}
+                                ${isVerified ? `
+                                    <span class="verified-badge ${isOwner ? 'owner-badge' : ''}">
+                                        <i class="bi bi-patch-check-fill"></i> ${badgeText}
+                                    </span>
+                                ` : ''}
                                 ${isOwner ? '<span class="verified-badge owner-badge"><i class="bi bi-crown-fill"></i> Owner</span>' : ''}
                             </div>
-                            <div class="message-text">
+                            <div class="message-bubble">
                                 ${escapeHtml(comment.message)}
                             </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <small class="message-time">
+                            <div class="message-footer">
+                                <span class="message-time">
                                     <i class="bi bi-clock"></i> ${formatTime(comment.timestamp)}
-                                </small>
-                                <button class="like-btn" onclick="likeMessage('${comment.id}')">
-                                    <i class="bi bi-heart"></i> <span id="likes-${comment.id}">${comment.likes || 0}</span>
+                                </span>
+                                <button class="like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${comment.id}', ${comment.likes || 0})">
+                                    <i class="bi bi-heart${isLiked ? '-fill' : ''}"></i>
+                                    <span id="likes-${comment.id}">${comment.likes || 0}</span>
                                 </button>
-                                ${canDelete(comment.name) ? `
+                                ${canUserDelete ? `
                                     <button class="delete-btn" onclick="deleteMessage('${comment.id}')">
                                         <i class="bi bi-trash"></i> Hapus
                                     </button>
@@ -394,15 +635,33 @@
                 `;
             }).join('');
             
-            // Scroll to bottom
-            area.scrollTop = area.scrollHeight;
+            // Scroll ke bawah
+            messagesArea.scrollTop = messagesArea.scrollHeight;
         }
-        
-        // Send message
+
+        // ========== LOAD MESSAGES ==========
+        async function loadMessages() {
+            try {
+                const response = await fetch('/api/comments?limit=200');
+                const data = await response.json();
+                
+                if (data.success) {
+                    comments = data.comments;
+                    renderMessages();
+                }
+            } catch (error) {
+                console.error('Error loading messages:', error);
+                messagesArea.innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-wifi-off fs-1" style="color: rgba(255,255,255,0.3);"></i>
+                        <p class="mt-3">Gagal memuat pesan. Coba lagi nanti.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ========== SEND MESSAGE ==========
         async function sendMessage() {
-            const nameInput = document.getElementById('nameInput');
-            const messageInput = document.getElementById('messageInput');
-            
             const name = nameInput.value.trim();
             const message = messageInput.value.trim();
             
@@ -425,6 +684,7 @@
             
             // Save name to localStorage
             localStorage.setItem('chatName', name);
+            currentName = name;
             
             try {
                 const response = await fetch('/api/comments', {
@@ -437,7 +697,7 @@
                 
                 if (result.success) {
                     messageInput.value = '';
-                    loadMessages();
+                    await loadMessages();
                 } else {
                     alert('Error: ' + result.error);
                 }
@@ -445,36 +705,63 @@
                 alert('Gagal mengirim pesan: ' + error.message);
             }
         }
-        
-        // Like message
-        async function likeMessage(id) {
-            try {
-                const response = await fetch(`/api/comments/like?id=${id}`, {
-                    method: 'POST'
-                });
-                const result = await response.json();
-                if (result.success) {
-                    const likesSpan = document.getElementById(`likes-${id}`);
-                    if (likesSpan) likesSpan.innerText = result.likes;
+
+        // ========== TOGGLE LIKE ==========
+        async function toggleLike(commentId, currentLikes) {
+            const isLiked = likedMessages[commentId];
+            
+            if (isLiked) {
+                // Unlike
+                likedMessages[commentId] = false;
+                document.getElementById(`likes-${commentId}`).innerText = currentLikes - 1;
+            } else {
+                // Like
+                likedMessages[commentId] = true;
+                document.getElementById(`likes-${commentId}`).innerText = currentLikes + 1;
+            }
+            
+            // Update button style
+            const btn = document.querySelector(`.message[data-id="${commentId}"] .like-btn`);
+            if (btn) {
+                if (!isLiked) {
+                    btn.classList.add('liked');
+                    btn.innerHTML = '<i class="bi bi-heart-fill"></i> <span id="likes-' + commentId + '">' + (currentLikes + 1) + '</span>';
+                } else {
+                    btn.classList.remove('liked');
+                    btn.innerHTML = '<i class="bi bi-heart"></i> <span id="likes-' + commentId + '">' + (currentLikes - 1) + '</span>';
                 }
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('likedMessages', JSON.stringify(likedMessages));
+            
+            // Send like to server (optional)
+            try {
+                await fetch('/api/comments/like', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: commentId, action: isLiked ? 'unlike' : 'like' })
+                });
             } catch (error) {
-                console.error('Error liking:', error);
+                console.error('Error sending like:', error);
             }
         }
-        
-        // Delete message
-        async function deleteMessage(id) {
+
+        // ========== DELETE MESSAGE ==========
+        async function deleteMessage(commentId) {
             if (!confirm('Hapus pesan ini?')) return;
             
-            const name = document.getElementById('nameInput').value.trim();
+            const name = currentName;
             
             try {
-                const response = await fetch(`/api/comments?id=${id}&name=${encodeURIComponent(name)}`, {
+                const response = await fetch(`/api/comments?id=${commentId}&name=${encodeURIComponent(name)}`, {
                     method: 'DELETE'
                 });
+                
                 const result = await response.json();
+                
                 if (result.success) {
-                    loadMessages();
+                    await loadMessages();
                 } else {
                     alert('Error: ' + result.error);
                 }
@@ -482,54 +769,28 @@
                 alert('Gagal menghapus: ' + error.message);
             }
         }
-        
-        // Check if user can delete
-        function canDelete(name) {
-            return name === 'Teguh' || name === 'Admin';
-        }
-        
-        // Helper functions
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
-        
-        function formatTime(timestamp) {
-            const date = new Date(timestamp);
-            const now = new Date();
-            const diff = now - date;
-            
-            if (diff < 60000) return 'Baru saja';
-            if (diff < 3600000) return `${Math.floor(diff / 60000)} menit lalu`;
-            if (diff < 86400000) return `${Math.floor(diff / 3600000)} jam lalu`;
-            return date.toLocaleDateString('id-ID');
-        }
-        
-        function getAvatarColor(name) {
-            const colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b', '#fa709a'];
-            let hash = 0;
-            for (let i = 0; i < name.length; i++) {
-                hash = ((hash << 5) - hash) + name.charCodeAt(i);
-                hash |= 0;
+
+        // ========== EVENT LISTENERS ==========
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
             }
-            return colors[Math.abs(hash) % colors.length];
-        }
-        
-        // Enter key to send
-        document.getElementById('messageInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
         });
         
-        // Auto refresh every 5 seconds
-        setInterval(loadMessages, 5000);
-        
-        // Initial load
+        nameInput.addEventListener('change', () => {
+            localStorage.setItem('chatName', nameInput.value.trim());
+            currentName = nameInput.value.trim();
+        });
+
+        // ========== AUTO REFRESH ==========
+        function startAutoRefresh() {
+            if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+            autoRefreshInterval = setInterval(loadMessages, 5000);
+        }
+
+        // ========== INITIAL LOAD ==========
         loadMessages();
+        startAutoRefresh();
     </script>
 </body>
-  </html>
+</html>
