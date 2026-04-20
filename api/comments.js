@@ -1,5 +1,5 @@
 // api/comments.js
-// Public chat/comments system with verified badge
+// Public chat system with permanent likes
 
 import fs from 'fs'
 import path from 'path'
@@ -32,17 +32,17 @@ function saveComments() {
 
 // Verified users list (centang biru)
 const verifiedUsers = [
-    { name: 'Teguh', number: '6281234567890', badge: '👑 Owner' },
-    { name: 'Admin', number: '6289876543210', badge: '⭐ Admin' },
-    { name: 'Moderator', number: '6285555555555', badge: '🛡️ Mod' }
+    { name: 'Teguh', badge: '👑 Owner', color: '#FFD700' },
+    { name: 'Admin', badge: '⭐ Admin', color: '#667eea' },
+    { name: 'Moderator', badge: '🛡️ Mod', color: '#4caf50' },
+    { name: 'Alecia', badge: '🤖 Bot', color: '#764ba2' }
 ]
 
-function isVerified(name, number) {
-    return verifiedUsers.find(u => u.name.toLowerCase() === name.toLowerCase() || u.number === number)
+function isVerified(name) {
+    return verifiedUsers.find(u => u.name.toLowerCase() === name.toLowerCase())
 }
 
 export default async function handler(req, res) {
-    // CORS
     res.setHeader('Access-Control-Allow-Origin', '*')
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
@@ -51,30 +51,36 @@ export default async function handler(req, res) {
         return res.status(200).end()
     }
     
-    // Load comments
     loadComments()
     
     // GET - ambil semua komentar
     if (req.method === 'GET') {
-        const { limit = 100 } = req.query
+        const { limit = 200 } = req.query
         const sortedComments = [...comments].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
         return res.status(200).json({
             success: true,
             comments: sortedComments.slice(0, parseInt(limit)),
             total: comments.length,
-            verifiedUsers: verifiedUsers.map(u => ({ name: u.name, badge: u.badge }))
+            verifiedUsers: verifiedUsers
         })
     }
     
     // POST - tambah komentar baru
     if (req.method === 'POST') {
         try {
-            const { name, message, number } = req.body
+            const { name, message } = req.body
             
             if (!name || !message) {
                 return res.status(400).json({ 
                     success: false, 
                     error: 'Nama dan pesan wajib diisi!' 
+                })
+            }
+            
+            if (name.length > 25) {
+                return res.status(400).json({ 
+                    success: false, 
+                    error: 'Nama terlalu panjang! Maksimal 25 karakter.' 
                 })
             }
             
@@ -85,17 +91,16 @@ export default async function handler(req, res) {
                 })
             }
             
-            // Cek verified
-            const verified = isVerified(name, number)
+            const verified = isVerified(name)
             
             const newComment = {
                 id: Date.now() + '_' + Math.random().toString(36).substr(2, 6),
-                name: name,
+                name: name.substring(0, 25),
                 message: message.substring(0, 500),
-                number: number || null,
                 timestamp: new Date().toISOString(),
                 isVerified: !!verified,
                 verifiedBadge: verified ? verified.badge : null,
+                verifiedColor: verified ? verified.color : null,
                 likes: 0,
                 likedBy: []
             }
@@ -124,24 +129,62 @@ export default async function handler(req, res) {
         }
     }
     
-    // DELETE - hapus komentar (hanya untuk verified)
-    if (req.method === 'DELETE') {
+    // POST - like/unlike komentar
+    if (req.method === 'POST' && req.url === '/api/comments/like') {
         try {
-            const { id, name, number } = req.query
-            
-            const verified = isVerified(name, number)
-            if (!verified) {
-                return res.status(403).json({ 
-                    success: false, 
-                    error: 'Only verified users can delete comments!' 
-                })
-            }
+            const { id, name } = req.body
             
             const commentIndex = comments.findIndex(c => c.id === id)
             if (commentIndex === -1) {
-                return res.status(404).json({ 
+                return res.status(404).json({ success: false, error: 'Comment not found' })
+            }
+            
+            const comment = comments[commentIndex]
+            const hasLiked = comment.likedBy && comment.likedBy.includes(name)
+            
+            if (hasLiked) {
+                // Unlike
+                comment.likes = (comment.likes || 0) - 1
+                comment.likedBy = comment.likedBy.filter(n => n !== name)
+            } else {
+                // Like
+                comment.likes = (comment.likes || 0) + 1
+                if (!comment.likedBy) comment.likedBy = []
+                comment.likedBy.push(name)
+            }
+            
+            saveComments()
+            
+            return res.status(200).json({
+                success: true,
+                likes: comment.likes,
+                liked: !hasLiked
+            })
+            
+        } catch (error) {
+            return res.status(500).json({ success: false, error: error.message })
+        }
+    }
+    
+    // DELETE - hapus komentar
+    if (req.method === 'DELETE') {
+        try {
+            const { id, name } = req.query
+            
+            const verified = isVerified(name)
+            const commentIndex = comments.findIndex(c => c.id === id)
+            
+            if (commentIndex === -1) {
+                return res.status(404).json({ success: false, error: 'Comment not found' })
+            }
+            
+            const comment = comments[commentIndex]
+            
+            // Hanya verified user atau pemilik komentar yang bisa hapus
+            if (!verified && comment.name !== name) {
+                return res.status(403).json({ 
                     success: false, 
-                    error: 'Comment not found' 
+                    error: 'Anda tidak memiliki izin untuk menghapus komentar ini!' 
                 })
             }
             
@@ -150,7 +193,7 @@ export default async function handler(req, res) {
             
             return res.status(200).json({
                 success: true,
-                message: 'Comment deleted!'
+                message: 'Komentar berhasil dihapus!'
             })
             
         } catch (error) {
@@ -162,4 +205,4 @@ export default async function handler(req, res) {
     }
     
     return res.status(405).json({ error: 'Method not allowed' })
-          }
+}
