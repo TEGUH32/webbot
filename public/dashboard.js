@@ -1,15 +1,19 @@
-// Dashboard JavaScript
+// public/dashboard.js
+// Dashboard JavaScript dengan auto refresh
+
 let currentPage = 1
 let currentLimit = 50
 let totalPages = 1
 let allCommands = []
+let refreshInterval = null
 
-// Test connection to bot
+// Test connection
 async function testConnection() {
     const toast = document.createElement('div')
     toast.className = 'alert alert-info position-fixed top-0 start-50 translate-middle-x mt-3'
     toast.style.zIndex = '9999'
-    toast.innerHTML = '<i class="bi bi-hourglass-split"></i> Testing connection...'
+    toast.style.minWidth = '300px'
+    toast.innerHTML = '<i class="bi bi-hourglass-split"></i> Checking connection...'
     document.body.appendChild(toast)
     
     try {
@@ -18,34 +22,30 @@ async function testConnection() {
         
         if (data.status === 'connected') {
             toast.className = 'alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3'
-            toast.innerHTML = '<i class="bi bi-check-circle"></i> Connected to Bot API!'
+            toast.innerHTML = '<i class="bi bi-check-circle"></i> Bot Connected! Last update: ' + new Date(data.lastUpdate).toLocaleString()
+            document.getElementById('botStatus').innerHTML = 'Online ✅'
+            document.getElementById('botStatus').className = 'status-online'
         } else {
-            toast.className = 'alert alert-danger position-fixed top-0 start-50 translate-middle-x mt-3'
-            toast.innerHTML = '<i class="bi bi-exclamation-triangle"></i> Cannot connect to Bot API!'
+            toast.className = 'alert alert-warning position-fixed top-0 start-50 translate-middle-x mt-3'
+            toast.innerHTML = '<i class="bi bi-clock"></i> Waiting for bot data...'
+            document.getElementById('botStatus').innerHTML = 'Waiting for data... ⏳'
+            document.getElementById('botStatus').className = 'status-warning'
         }
     } catch (error) {
         toast.className = 'alert alert-danger position-fixed top-0 start-50 translate-middle-x mt-3'
-        toast.innerHTML = '<i class="bi bi-exclamation-triangle"></i> Connection failed: ' + error.message
+        toast.innerHTML = '<i class="bi bi-exclamation-triangle"></i> Connection error: ' + error.message
+        document.getElementById('botStatus').innerHTML = 'Offline ❌'
+        document.getElementById('botStatus').className = 'status-offline'
     }
     
     setTimeout(() => toast.remove(), 3000)
 }
 
-// Fetch data from API
-async function fetchData(endpoint, options = {}) {
+// Fetch data dari API
+async function fetchData(endpoint) {
     try {
-        const response = await fetch(`/api/${endpoint}`, {
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers
-            }
-        })
-        
-        if (!response.ok) {
-            const error = await response.json()
-            throw new Error(error.message || `HTTP ${response.status}`)
-        }
-        
+        const response = await fetch(`/api/${endpoint}`)
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
         return await response.json()
     } catch (error) {
         console.error(`Error fetching ${endpoint}:`, error)
@@ -53,19 +53,20 @@ async function fetchData(endpoint, options = {}) {
     }
 }
 
-// Load stats
+// Load all stats
 async function loadStats() {
     const stats = await fetchData('stats')
     if (stats) {
-        document.getElementById('totalUsers').textContent = stats.totalUsers?.toLocaleString() || 0
-        document.getElementById('premiumUsers').textContent = stats.premiumUsers?.toLocaleString() || 0
-        document.getElementById('totalGroups').textContent = stats.totalGroups?.toLocaleString() || 0
-        document.getElementById('totalCommands').textContent = stats.totalCommands?.toLocaleString() || 0
-        document.getElementById('botStatus').innerHTML = 'Online ✅'
-        document.getElementById('botStatus').className = 'status-online'
-    } else {
-        document.getElementById('botStatus').innerHTML = 'Offline ❌'
-        document.getElementById('botStatus').className = 'status-offline'
+        document.getElementById('totalUsers').textContent = (stats.totalUsers || 0).toLocaleString()
+        document.getElementById('premiumUsers').textContent = (stats.premiumUsers || 0).toLocaleString()
+        document.getElementById('totalGroups').textContent = (stats.totalGroups || 0).toLocaleString()
+        document.getElementById('totalCommands').textContent = (stats.totalCommands || 0).toLocaleString()
+        document.getElementById('activeUsers').textContent = (stats.activeUsers || 0).toLocaleString()
+        
+        if (stats.lastUpdate) {
+            const lastUpdate = new Date(stats.lastUpdate)
+            document.getElementById('lastUpdate').textContent = lastUpdate.toLocaleString()
+        }
     }
 }
 
@@ -74,28 +75,26 @@ async function loadGroups() {
     const groups = await fetchData('groups')
     const tbody = document.getElementById('groupsList')
     
-    if (groups && groups.length > 0) {
-        tbody.innerHTML = groups.map(g => `
-            <tr>
-                <td><i class="bi bi-chat-dots"></i> ${escapeHtml(g.name)}</td>
-                <td><small>${escapeHtml(g.id)}</small></td>
-                <td>${g.members || 0}</td>
-                <td>
-                    ${g.welcome ? '<span class="badge bg-success me-1">Welcome</span>' : ''}
-                    ${g.antiLink ? '<span class="badge bg-warning me-1">Anti Link</span>' : ''}
-                </td>
-                <td>${g.isBanned ? '<span class="badge bg-danger">Banned</span>' : '<span class="badge bg-success">Active</span>'}</td>
-            </tr>
-        `).join('')
-    } else {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center">No groups found</td></tr>'
+    if (tbody) {
+        if (groups && groups.length > 0) {
+            tbody.innerHTML = groups.map(g => `
+                <tr>
+                    <td><i class="bi bi-chat-dots"></i> ${escapeHtml(g.name)}</td>
+                    <td><small>${escapeHtml(g.id)}</small></td>
+                    <td>${g.members || 0}</td>
+                    <td>${g.isBanned ? '<span class="badge bg-danger">Banned</span>' : '<span class="badge bg-success">Active</span>'}</td>
+                </tr>
+            `).join('')
+        } else {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center">No groups found</td></tr>'
+        }
     }
 }
 
 // Load commands
 async function loadCommands() {
     const commands = await fetchData('commands')
-    if (commands) {
+    if (commands && commands.length > 0) {
         allCommands = commands
         filterCommands()
     }
@@ -107,53 +106,56 @@ function filterCommands() {
     const filtered = category === 'all' ? allCommands : allCommands.filter(c => c.category === category)
     const tbody = document.getElementById('commandsList')
     
-    if (filtered.length > 0) {
-        tbody.innerHTML = filtered.map(c => `
-            <tr>
-                <td><code>${escapeHtml(c.name)}</code></td>
-                <td><span class="badge bg-secondary">${escapeHtml(c.category)}</span></td>
-                <td>
-                    ${c.isPremium ? '<span class="badge bg-warning">Premium</span>' : '<span class="badge bg-info">Free</span>'}
-                    ${c.isOwner ? '<span class="badge bg-danger">Owner</span>' : ''}
-                </td>
-                <td><small>${escapeHtml(c.description)}</small></td>
-            </tr>
-        `).join('')
-    } else {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center">No commands found</td></tr>'
+    if (tbody) {
+        if (filtered.length > 0) {
+            tbody.innerHTML = filtered.map(c => `
+                <tr>
+                    <td><code>${escapeHtml(c.name)}</code></td>
+                    <td><span class="badge bg-secondary">${escapeHtml(c.category)}</span></td>
+                    <td>${c.isPremium ? '<span class="badge bg-warning">Premium</span>' : '<span class="badge bg-info">Free</span>'}</td>
+                    <td><small>${escapeHtml(c.description || '-')}</small></td>
+                </tr>
+            `).join('')
+        } else {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center">No commands found</td></tr>'
+        }
     }
 }
 
-// Load users
+// Load users with pagination
 async function loadUsers(page = 1) {
     const searchQuery = document.getElementById('searchUser')?.value || ''
     let url = `users?page=${page}&limit=${currentLimit}`
     if (searchQuery) {
-        url = `search?q=${encodeURIComponent(searchQuery)}`
+        url = `users?search=${encodeURIComponent(searchQuery)}&page=1&limit=${currentLimit}`
     }
     
     const data = await fetchData(url)
     
     if (data && data.users) {
-        const users = data.users
         const tbody = document.getElementById('usersList')
         
-        if (users.length > 0) {
-            tbody.innerHTML = users.map(u => `
-                <tr>
-                    <td><i class="bi bi-person-circle"></i> ${escapeHtml(u.name)}</td>
-                    <td>${escapeHtml(u.number)}</td>
-                    <td>${u.isPremium ? '<span class="badge bg-warning">✓ Premium</span>' : '<span class="badge bg-secondary">Free</span>'}</td>
-                    <td>Level ${u.level}</td>
-                    <td>💰 ${(u.money || 0).toLocaleString()}</td>
-                    <td>🎫 ${(u.limit || 0).toLocaleString()}</td>
-                </tr>
-            `).join('')
-        } else {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center">No users found</td></tr>'
+        if (tbody) {
+            if (data.users.length > 0) {
+                tbody.innerHTML = data.users.map(u => `
+                    <tr>
+                        <td><i class="bi bi-person-circle"></i> ${escapeHtml(u.name)}</td>
+                        <td>${escapeHtml(u.number)}</td>
+                        <td>${u.isPremium ? '<span class="badge bg-warning">✓ Premium</span>' : '<span class="badge bg-secondary">Free</span>'}</td>
+                        <td>Level ${u.level}</td>
+                        <td>💰 ${(u.money || 0).toLocaleString()}</td>
+                        <td>🎫 ${(u.limit || 0).toLocaleString()}</td>
+                    </tr>
+                `).join('')
+            } else {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">No users found</td></tr>'
+            }
         }
         
-        document.getElementById('userCount').textContent = `Total: ${data.total || users.length} users`
+        const userCount = document.getElementById('userCount')
+        if (userCount) {
+            userCount.textContent = `Total: ${data.total} users`
+        }
         
         if (!searchQuery && data.totalPages) {
             totalPages = data.totalPages
@@ -169,14 +171,12 @@ function renderPagination() {
     
     pagination.innerHTML = ''
     
-    // Previous button
     pagination.innerHTML += `
         <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
             <button class="page-link" onclick="changePage(${currentPage - 1})">Previous</button>
         </li>
     `
     
-    // Page numbers
     let startPage = Math.max(1, currentPage - 2)
     let endPage = Math.min(totalPages, currentPage + 2)
     
@@ -188,7 +188,6 @@ function renderPagination() {
         `
     }
     
-    // Next button
     pagination.innerHTML += `
         <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
             <button class="page-link" onclick="changePage(${currentPage + 1})">Next</button>
@@ -204,11 +203,26 @@ function changePage(page) {
 }
 
 // Refresh all data
-function refreshData() {
-    loadStats()
-    loadGroups()
-    loadCommands()
-    loadUsers(currentPage)
+async function refreshData() {
+    await loadStats()
+    await loadGroups()
+    await loadCommands()
+    await loadUsers(currentPage)
+    
+    // Update last refresh time
+    const now = new Date()
+    const refreshTime = document.getElementById('refreshTime')
+    if (refreshTime) {
+        refreshTime.textContent = now.toLocaleTimeString()
+    }
+}
+
+// Start auto refresh
+function startAutoRefresh() {
+    if (refreshInterval) clearInterval(refreshInterval)
+    refreshInterval = setInterval(() => {
+        refreshData()
+    }, 30000) // Refresh setiap 30 detik
 }
 
 // Escape HTML
@@ -242,10 +256,27 @@ document.getElementById('searchUser')?.addEventListener('input', (e) => {
     }, 500)
 })
 
+// Update live time
+function updateLiveTime() {
+    const now = new Date()
+    const timeStr = now.toLocaleString('id-ID', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    })
+    const liveTime = document.getElementById('liveTime')
+    if (liveTime) liveTime.textContent = timeStr
+}
+
 // Initial load
 refreshData()
+startAutoRefresh()
+testConnection()
 
-// Auto refresh every 30 seconds
-setInterval(() => {
-    loadStats()
-}, 30000)
+// Update time every second
+setInterval(updateLiveTime, 1000)
+updateLiveTime()
